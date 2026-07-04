@@ -8,6 +8,7 @@ RUN mvn package -DskipTests -B
 
 # Runtime stage
 FROM eclipse-temurin:17-jre-alpine
+RUN apk update && apk upgrade --no-cache
 WORKDIR /app
 COPY --from=build /app/target/*.jar app.jar
 EXPOSE 8080
