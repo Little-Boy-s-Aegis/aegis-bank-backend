@@ -3,7 +3,9 @@ package com.example.bank.model;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "accounts")
+@Table(name = "accounts", indexes = {
+    @Index(name = "idx_accounts_number", columnList = "accountNumber")
+})
 public class Account {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

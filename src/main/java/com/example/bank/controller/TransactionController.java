@@ -43,25 +43,14 @@ public class TransactionController {
 
     @PostMapping("/transfer")
     @Transactional
-    public ResponseEntity<?> transferMoney(@RequestBody Map<String, Object> payload, HttpServletRequest servletRequest) {
+    public ResponseEntity<?> transferMoney(@jakarta.validation.Valid @RequestBody com.example.bank.model.TransferRequest payload, HttpServletRequest servletRequest) {
         String clientIp = servletRequest.getRemoteAddr();
         String currentUsername = SecurityContextHolder.getContext().getAuthentication().getName();
 
-        String sourceAccountNumber = (String) payload.get("sourceAccountNumber");
-        String targetAccountNumber = (String) payload.get("targetAccountNumber");
-        Object amountObj = payload.get("amount");
-        String description = (String) payload.get("description");
-
-        if (sourceAccountNumber == null || targetAccountNumber == null || amountObj == null || description == null) {
-            return ResponseEntity.badRequest().body(Map.of("error", "Missing required fields"));
-        }
-
-        Double amount;
-        try {
-            amount = Double.valueOf(amountObj.toString());
-        } catch (NumberFormatException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", "Invalid amount format"));
-        }
+        String sourceAccountNumber = payload.getSourceAccountNumber();
+        String targetAccountNumber = payload.getTargetAccountNumber();
+        Double amount = payload.getAmount();
+        String description = payload.getDescription();
 
         SecuritySettings settings = SecuritySettings.getInstance();
         Account sourceAccount = accountRepository.findByAccountNumber(sourceAccountNumber).orElse(null);

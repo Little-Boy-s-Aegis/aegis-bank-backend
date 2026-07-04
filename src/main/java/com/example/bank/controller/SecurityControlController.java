@@ -14,6 +14,9 @@ import java.util.Map;
 @CrossOrigin(origins = "*")
 public class SecurityControlController {
 
+    @org.springframework.beans.factory.annotation.Value("${aegis.security.sync-token}")
+    private String syncToken;
+
     @Autowired
     private SecurityLogRepository securityLogRepository;
 
@@ -59,7 +62,11 @@ public class SecurityControlController {
     }
 
     @GetMapping("/logs")
-    public ResponseEntity<List<SecurityLog>> getSecurityLogs() {
+    public ResponseEntity<?> getSecurityLogs(@RequestHeader(value = "X-Aegis-Token", required = false) String token) {
+        if (token == null || !token.equals(syncToken)) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("error", "Unauthorized: Invalid Aegis Sync Token"));
+        }
         return ResponseEntity.ok(securityLogRepository.findAllByOrderByTimestampDesc());
     }
 
