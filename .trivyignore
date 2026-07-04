@@ -1,0 +1,2 @@
+# Suppress unpatched Spring Boot session ID vulnerability as it has no release on 3.4.x branch
+CVE-2026-40973
