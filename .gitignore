@@ -1,0 +1,25 @@
+target/
+!.mvn/wrapper/maven-wrapper.jar
+*.class
+.mtj.tmp/
+*.jar
+*.war
+*.ear
+*.nar
+*.zip
+*.tar.gz
+*.rar
+hs_err_pid*
+
+# Eclipse metadata
+.settings/
+.project
+.classpath
+.factorypath
+
+# IntelliJ metadata
+.idea/
+*.iml
+
+# VS Code metadata
+.vscode/
