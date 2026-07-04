@@ -1,0 +1,67 @@
+name: Backend CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop, 'feature/*' ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  test-and-build:
+    name: Run Tests & Build JAR
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        cache: 'maven'
+
+    - name: Run Unit & Integration Tests
+      run: mvn clean test
+
+    - name: Package Application
+      run: mvn package -DskipTests
+
+    - name: Upload Build Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: bank-demo-jar
+        path: target/*.jar
+
+  docker-build-scan:
+    name: Docker Build & Trivy Scan
+    needs: test-and-build
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    - name: Download Build Artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: bank-demo-jar
+        path: target/
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Build Local Docker Image
+      run: |
+        docker build -t aegis-bank-backend:${{ github.sha }} .
+
+    - name: Run Trivy Vulnerability Scanner
+      uses: aquasecurity/trivy-action@master
+      with:
+        image-ref: 'aegis-bank-backend:${{ github.sha }}'
+        format: 'table'
+        exit-code: '1'
+        ignore-unfixed: true
+        vuln-type: 'os,library'
+        severity: 'CRITICAL,HIGH'
