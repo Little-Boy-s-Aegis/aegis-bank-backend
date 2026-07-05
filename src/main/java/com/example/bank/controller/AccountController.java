@@ -5,6 +5,7 @@ import com.example.bank.model.SecurityLog;
 import com.example.bank.model.SecuritySettings;
 import com.example.bank.repository.AccountRepository;
 import com.example.bank.repository.SecurityLogRepository;
+import com.example.bank.service.SecurityEventPublisher;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -24,6 +25,9 @@ public class AccountController {
 
     @Autowired
     private SecurityLogRepository securityLogRepository;
+
+    @Autowired
+    private SecurityEventPublisher securityEventPublisher;
 
     @GetMapping("/{accountNumber}/details")
     public ResponseEntity<?> getAccountDetails(@PathVariable String accountNumber, HttpServletRequest servletRequest) {
@@ -51,7 +55,7 @@ public class AccountController {
             // Secure Mode: Verify if the logged-in user owns the requested account number.
             if (!account.getUser().getUsername().equalsIgnoreCase(currentUsername)) {
                 // Log BOLA/IDOR attack
-                securityLogRepository.save(SecurityLog.builder()
+                SecurityLog idorLog = SecurityLog.builder()
                         .timestamp(LocalDateTime.now())
                         .attackType("IDOR/BOLA")
                         .endpoint("GET /api/accounts/" + accountNumber + "/details")
@@ -59,7 +63,9 @@ public class AccountController {
                         .status("BLOCKED")
                         .clientIp(clientIp)
                         .description("BOLA/IDOR blocked. User '" + currentUsername + "' tried to access '" + accountNumber + "' without ownership.")
-                        .build());
+                        .build();
+                securityLogRepository.save(idorLog);
+                securityEventPublisher.publish(idorLog);
 
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of(
                         "error", "Access denied. You do not own this account."

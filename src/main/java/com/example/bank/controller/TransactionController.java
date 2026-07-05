@@ -7,6 +7,7 @@ import com.example.bank.model.Transaction;
 import com.example.bank.repository.AccountRepository;
 import com.example.bank.repository.SecurityLogRepository;
 import com.example.bank.repository.TransactionRepository;
+import com.example.bank.service.SecurityEventPublisher;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Query;
@@ -37,6 +38,9 @@ public class TransactionController {
 
     @Autowired
     private SecurityLogRepository securityLogRepository;
+
+    @Autowired
+    private SecurityEventPublisher securityEventPublisher;
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -70,7 +74,7 @@ public class TransactionController {
         if (!settings.isParamTamperingEnabled()) {
             // Secure Mode Check A: Check if the logged-in user owns the source account
             if (!sourceAccount.getUser().getUsername().equalsIgnoreCase(currentUsername)) {
-                securityLogRepository.save(SecurityLog.builder()
+                SecurityLog paramTamperLog = SecurityLog.builder()
                         .timestamp(LocalDateTime.now())
                         .attackType("PARAMETER_TAMPERING")
                         .endpoint("POST /api/transactions/transfer")
@@ -78,7 +82,9 @@ public class TransactionController {
                         .status("BLOCKED")
                         .clientIp(clientIp)
                         .description("Blocked transfer from account not owned by user. Potential parameter tampering.")
-                        .build());
+                        .build();
+                securityLogRepository.save(paramTamperLog);
+                securityEventPublisher.publish(paramTamperLog);
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of(
                         "error", "Forbidden: You do not own the source account."
                 ));
@@ -86,7 +92,7 @@ public class TransactionController {
 
             // Secure Mode Check B: Check if transfer amount is positive
             if (amount <= 0) {
-                securityLogRepository.save(SecurityLog.builder()
+                SecurityLog amountTamperLog = SecurityLog.builder()
                         .timestamp(LocalDateTime.now())
                         .attackType("PARAMETER_TAMPERING")
                         .endpoint("POST /api/transactions/transfer")
@@ -94,7 +100,9 @@ public class TransactionController {
                         .status("BLOCKED")
                         .clientIp(clientIp)
                         .description("Blocked money transfer with non-positive amount: " + amount)
-                        .build());
+                        .build();
+                securityLogRepository.save(amountTamperLog);
+                securityEventPublisher.publish(amountTamperLog);
                 return ResponseEntity.badRequest().body(Map.of(
                         "error", "Invalid amount: Transfer amount must be positive."
                 ));
@@ -114,7 +122,7 @@ public class TransactionController {
             // Secure Mode XSS Mitigation: Escape HTML output
             finalDescription = HtmlUtils.htmlEscape(description);
             if (isXssPayload(description)) {
-                securityLogRepository.save(SecurityLog.builder()
+                SecurityLog xssLog = SecurityLog.builder()
                         .timestamp(LocalDateTime.now())
                         .attackType("XSS")
                         .endpoint("POST /api/transactions/transfer")
@@ -122,7 +130,9 @@ public class TransactionController {
                         .status("DETECTED_AND_SANITIZED")
                         .clientIp(clientIp)
                         .description("Detected Stored XSS payload in description. HTML entities escaped.")
-                        .build());
+                        .build();
+                securityLogRepository.save(xssLog);
+                securityEventPublisher.publish(xssLog);
             }
         }
 
@@ -172,7 +182,7 @@ public class TransactionController {
         // Security check for reading history in secure mode (IDOR prevention)
         if (!settings.isIdorEnabled()) {
             if (!myAccount.getUser().getUsername().equalsIgnoreCase(currentUsername)) {
-                securityLogRepository.save(SecurityLog.builder()
+                SecurityLog idorLog = SecurityLog.builder()
                         .timestamp(LocalDateTime.now())
                         .attackType("IDOR/BOLA")
                         .endpoint("GET /api/transactions/history?accountNumber=" + accountNumber)
@@ -180,7 +190,9 @@ public class TransactionController {
                         .status("BLOCKED")
                         .clientIp(clientIp)
                         .description("Blocked reading transaction history for another user's account.")
-                        .build());
+                        .build();
+                securityLogRepository.save(idorLog);
+                securityEventPublisher.publish(idorLog);
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", "Access denied."));
             }
         }
@@ -214,7 +226,7 @@ public class TransactionController {
 
                 // Check for SQLi attempt to log
                 if (isSqlInjectionSearchPayload(search)) {
-                    securityLogRepository.save(SecurityLog.builder()
+                    SecurityLog sqliLog = SecurityLog.builder()
                             .timestamp(LocalDateTime.now())
                             .attackType("SQL_INJECTION")
                             .endpoint("GET /api/transactions/history?search=" + search)
@@ -222,7 +234,9 @@ public class TransactionController {
                             .status("BLOCKED")
                             .clientIp(clientIp)
                             .description("Blocked SQL Injection attempt in transaction history search.")
-                            .build());
+                            .build();
+                    securityLogRepository.save(sqliLog);
+                    securityEventPublisher.publish(sqliLog);
                 }
             }
         }
