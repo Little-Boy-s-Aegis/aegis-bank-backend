@@ -8,6 +8,7 @@ import com.example.bank.model.User;
 import com.example.bank.repository.AccountRepository;
 import com.example.bank.repository.SecurityLogRepository;
 import com.example.bank.repository.UserRepository;
+import com.example.bank.service.SecurityEventPublisher;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Query;
@@ -41,6 +42,9 @@ public class AuthController {
 
     @Autowired
     private JwtTokenUtil jwtTokenUtil;
+
+    @Autowired
+    private SecurityEventPublisher securityEventPublisher;
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -123,7 +127,7 @@ public class AuthController {
 
             if (failures.size() >= MAX_FAILED_ATTEMPTS) {
                 // Log the brute force attempt
-                securityLogRepository.save(SecurityLog.builder()
+                SecurityLog bruteForceLog = SecurityLog.builder()
                         .timestamp(LocalDateTime.now())
                         .attackType("BRUTE_FORCE")
                         .endpoint("POST /api/auth/login")
@@ -131,7 +135,9 @@ public class AuthController {
                         .status("BLOCKED")
                         .clientIp(clientIp)
                         .description("IP rate limited after " + failures.size() + " failed login attempts.")
-                        .build());
+                        .build();
+                securityLogRepository.save(bruteForceLog);
+                securityEventPublisher.publish(bruteForceLog);
 
                 return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(Map.of(
                         "error", "Too many failed attempts. Please try again after 1 minute."
@@ -145,6 +151,22 @@ public class AuthController {
         if (settings.isSqliEnabled()) {
             // Vulnerable Code: String Concatenation!
             String sql = "SELECT * FROM users WHERE username = '" + username + "' AND password_plain = '" + password + "'";
+
+            // Even in vulnerable mode, detect and log the attack for SOC visibility
+            if (isSqlInjectionPayload(username) || isSqlInjectionPayload(password)) {
+                SecurityLog sqliLog = SecurityLog.builder()
+                        .timestamp(LocalDateTime.now())
+                        .attackType("SQL_INJECTION")
+                        .endpoint("POST /api/auth/login")
+                        .payload("username=" + username + ", password=" + password)
+                        .status("ALLOWED")
+                        .clientIp(clientIp)
+                        .description("SQL Injection payload detected in authentication. Attack was ALLOWED (vulnerable mode active).")
+                        .build();
+                securityLogRepository.save(sqliLog);
+                securityEventPublisher.publish(sqliLog);
+            }
+
             try {
                 Query query = entityManager.createNativeQuery(sql, User.class);
                 List<?> results = query.getResultList();
@@ -169,7 +191,7 @@ public class AuthController {
 
             // Check if login request contains malicious SQL characters in secure mode to log attack
             if (isSqlInjectionPayload(username) || isSqlInjectionPayload(password)) {
-                securityLogRepository.save(SecurityLog.builder()
+                SecurityLog sqliLog = SecurityLog.builder()
                         .timestamp(LocalDateTime.now())
                         .attackType("SQL_INJECTION")
                         .endpoint("POST /api/auth/login")
@@ -177,7 +199,9 @@ public class AuthController {
                         .status("BLOCKED")
                         .clientIp(clientIp)
                         .description("Blocked SQL Injection attempt in authentication parameters.")
-                        .build());
+                        .build();
+                securityLogRepository.save(sqliLog);
+                securityEventPublisher.publish(sqliLog);
             }
         }
 
