@@ -1,11 +1,11 @@
 package com.example.bank.model;
 
 public class SecuritySettings {
-    private boolean sqliEnabled = true;
-    private boolean xssEnabled = true;
-    private boolean idorEnabled = true;
-    private boolean paramTamperingEnabled = true;
-    private boolean bruteForceEnabled = true;
+    private boolean sqliEnabled = false;
+    private boolean xssEnabled = false;
+    private boolean idorEnabled = false;
+    private boolean paramTamperingEnabled = false;
+    private boolean bruteForceEnabled = false;
 
     private static final SecuritySettings instance = new SecuritySettings();
 

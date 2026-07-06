@@ -27,7 +27,6 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/transactions")
-@CrossOrigin(origins = "*")
 public class TransactionController {
 
     @Autowired
@@ -104,7 +103,8 @@ public class TransactionController {
                 securityLogRepository.save(amountTamperLog);
                 securityEventPublisher.publish(amountTamperLog);
                 return ResponseEntity.badRequest().body(Map.of(
-                        "error", "Invalid amount: Transfer amount must be positive."
+                        "amount", "Amount must be a positive number greater than zero",
+                        "error", "Amount must be a positive number greater than zero"
                 ));
             }
 

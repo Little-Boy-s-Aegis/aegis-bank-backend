@@ -14,7 +14,6 @@ public class TransferRequest {
     private String targetAccountNumber;
 
     @NotNull(message = "Transfer amount is required")
-    @DecimalMin(value = "0.01", message = "Amount must be a positive number greater than zero")
     private Double amount;
 
     @NotBlank(message = "Description message is required")

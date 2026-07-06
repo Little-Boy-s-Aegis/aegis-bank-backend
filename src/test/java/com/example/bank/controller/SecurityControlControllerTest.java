@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -30,6 +31,7 @@ public class SecurityControlControllerTest {
     }
 
     @Test
+    @WithMockUser
     public void testToggleSecuritySetting() throws Exception {
         mockMvc.perform(post("/api/admin/security/toggle")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -62,6 +64,7 @@ public class SecurityControlControllerTest {
     }
 
     @Test
+    @WithMockUser
     public void testClearLogs() throws Exception {
         mockMvc.perform(post("/api/admin/security/logs/clear"))
                 .andExpect(status().isOk())
