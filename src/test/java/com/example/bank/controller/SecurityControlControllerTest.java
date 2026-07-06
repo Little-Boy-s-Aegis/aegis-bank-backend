@@ -20,7 +20,7 @@ public class SecurityControlControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    private final String syncToken = "aegis-secret-security-sync-token-2026";
+    private final String syncToken = "test-only-not-for-production";
 
     @Test
     public void testGetSecurityStatus() throws Exception {
