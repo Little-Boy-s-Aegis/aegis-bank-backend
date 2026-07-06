@@ -44,11 +44,25 @@ public class TransactionController {
     @PersistenceContext
     private EntityManager entityManager;
 
+    private static final Map<String, ResponseEntity<?>> idempotencyMap = new java.util.concurrent.ConcurrentHashMap<>();
+
     @PostMapping("/transfer")
     @Transactional
     public ResponseEntity<?> transferMoney(@jakarta.validation.Valid @RequestBody com.example.bank.model.TransferRequest payload, HttpServletRequest servletRequest) {
         String clientIp = servletRequest.getRemoteAddr();
         String currentUsername = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        String idempotencyKey = servletRequest.getHeader("Idempotency-Key");
+        if (idempotencyKey == null) {
+            idempotencyKey = servletRequest.getHeader("X-Idempotency-Key");
+        }
+
+        if (idempotencyKey != null && !idempotencyKey.trim().isEmpty()) {
+            ResponseEntity<?> cachedResponse = idempotencyMap.get(idempotencyKey);
+            if (cachedResponse != null) {
+                return cachedResponse;
+            }
+        }
 
         String sourceAccountNumber = payload.getSourceAccountNumber();
         String targetAccountNumber = payload.getTargetAccountNumber();
@@ -155,11 +169,15 @@ public class TransactionController {
                 .build();
         transactionRepository.save(tx);
 
-        return ResponseEntity.ok(Map.of(
+        ResponseEntity<?> successResponse = ResponseEntity.ok(Map.of(
                 "message", "Transfer completed successfully",
                 "transactionId", tx.getId(),
                 "sourceBalance", sourceAccount.getBalance()
         ));
+        if (idempotencyKey != null && !idempotencyKey.trim().isEmpty()) {
+            idempotencyMap.put(idempotencyKey, successResponse);
+        }
+        return successResponse;
     }
 
     @SuppressWarnings("unchecked")
