@@ -76,7 +76,6 @@ public class AuthController {
         User user = User.builder()
                 .username(username)
                 .password(passwordEncoder.encode(password))
-                .passwordPlain(password)
                 .fullName(fullName)
                 .email(email)
                 .role("USER")
