@@ -11,7 +11,6 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/admin/security")
-@CrossOrigin(origins = "*")
 public class SecurityControlController {
 
     @org.springframework.beans.factory.annotation.Value("${aegis.security.sync-token}")

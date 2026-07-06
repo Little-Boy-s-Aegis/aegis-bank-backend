@@ -35,7 +35,10 @@ public class SecurityConfig {
             .headers(headers -> headers.frameOptions(frame -> frame.disable())) // For H2 Console
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/auth/**").permitAll()
-                .requestMatchers("/api/admin/security/**").permitAll() // allow anyone to toggle vulnerabilities for demo ease
+                .requestMatchers("/api/admin/security/status").permitAll()
+                .requestMatchers("/api/admin/security/logs").permitAll() // internally validated via X-Aegis-Token
+                .requestMatchers("/api/admin/security/toggle").authenticated()
+                .requestMatchers("/api/admin/security/logs/clear").authenticated()
                 .requestMatchers("/h2-console/**").permitAll()
                 .anyRequest().authenticated()
             )
@@ -48,7 +51,14 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.addAllowedOriginPattern("*"); // Allow all origins for dev
+        configuration.setAllowedOriginPatterns(java.util.List.of(
+            "http://localhost",
+            "http://localhost:*",
+            "http://127.0.0.1",
+            "http://127.0.0.1:*",
+            "http://*.aegis.com",
+            "https://*.aegis.com"
+        ));
         configuration.addAllowedMethod("*");
         configuration.addAllowedHeader("*");
         configuration.addExposedHeader("Authorization");
