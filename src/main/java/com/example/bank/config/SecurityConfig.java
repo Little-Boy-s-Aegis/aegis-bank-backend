@@ -32,7 +32,20 @@ public class SecurityConfig {
         http
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .csrf(csrf -> csrf.disable()) // Disabled for REST API and quick demos
-            .headers(headers -> headers.frameOptions(frame -> frame.disable())) // For H2 Console
+            .headers(headers -> {
+                headers.frameOptions(frame -> frame.disable()); // For H2 Console
+                headers.httpStrictTransportSecurity(hsts -> hsts
+                    .includeSubDomains(true)
+                    .maxAgeInSeconds(31536000)
+                    .preload(true)
+                );
+                headers.permissionsPolicy(permissions -> permissions
+                    .policy("camera=(), microphone=(), geolocation=(), usb=(), payment=()")
+                );
+                headers.addHeaderWriter(new org.springframework.security.web.header.writers.StaticHeadersWriter(
+                    "Strict-Transport-Security", "max-age=31536000; includeSubDomains; preload"
+                ));
+            })
             .exceptionHandling(exception -> exception
                 .authenticationEntryPoint(new org.springframework.security.web.authentication.HttpStatusEntryPoint(org.springframework.http.HttpStatus.UNAUTHORIZED))
             )
