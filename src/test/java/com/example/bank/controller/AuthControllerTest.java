@@ -7,6 +7,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -17,6 +18,34 @@ public class AuthControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @Test
+    public void testLogoutAndTokenRevocation() throws Exception {
+        // 1. Login to get a valid token
+        String responseContent = mockMvc.perform(post("/api/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"username\":\"alice\",\"password\":\"password123\"}"))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+
+        String token = com.jayway.jsonpath.JsonPath.read(responseContent, "$.token");
+
+        // 2. Access details with the token should succeed
+        mockMvc.perform(get("/api/accounts/ACC-123456/details")
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk());
+
+        // 3. Call logout to revoke the token
+        mockMvc.perform(post("/api/auth/logout")
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("Logged out successfully"));
+
+        // 4. Accessing details again with the same token must fail (401 Unauthorized)
+        mockMvc.perform(get("/api/accounts/ACC-123456/details")
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isUnauthorized());
+    }
 
     @Test
     public void testRegisterUserSuccess() throws Exception {

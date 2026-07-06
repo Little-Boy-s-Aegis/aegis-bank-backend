@@ -74,8 +74,20 @@ public class JwtTokenUtil implements Serializable {
                 .compact();
     }
 
+    private final java.util.Set<String> blacklistedTokens = java.util.concurrent.ConcurrentHashMap.newKeySet();
+
+    public void blacklistToken(String token) {
+        if (token != null) {
+            blacklistedTokens.add(token);
+        }
+    }
+
+    public boolean isTokenBlacklisted(String token) {
+        return token != null && blacklistedTokens.contains(token);
+    }
+
     public Boolean validateToken(String token, UserDetails userDetails) {
         final String username = getUsernameFromToken(token);
-        return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
+        return (username.equals(userDetails.getUsername()) && !isTokenExpired(token) && !isTokenBlacklisted(token));
     }
 }

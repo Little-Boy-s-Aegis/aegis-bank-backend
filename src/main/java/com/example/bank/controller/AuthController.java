@@ -237,6 +237,16 @@ public class AuthController {
         ));
     }
 
+    @PostMapping("/logout")
+    public ResponseEntity<?> logoutUser(HttpServletRequest request) {
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            String token = authHeader.substring(7);
+            jwtTokenUtil.blacklistToken(token);
+        }
+        return ResponseEntity.ok(Map.of("message", "Logged out successfully"));
+    }
+
     private boolean isSqlInjectionPayload(String input) {
         if (input == null) return false;
         String lower = input.toLowerCase();
