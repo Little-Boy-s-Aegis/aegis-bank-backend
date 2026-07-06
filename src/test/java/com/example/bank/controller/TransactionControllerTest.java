@@ -98,6 +98,43 @@ public class TransactionControllerTest {
                         .content(body))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value("Transfer completed successfully"));
+     }
+
+    @Test
+    @WithMockUser(username = "alice")
+    public void testTransferMoneyIdempotent() throws Exception {
+        String key = "idemp-key-" + System.currentTimeMillis();
+        String body = "{" +
+                "\"sourceAccountNumber\":\"ACC-123456\"," +
+                "\"targetAccountNumber\":\"ACC-987654\"," +
+                "\"amount\":10.00," +
+                "\"description\":\"Idempotent transfer\"" +
+                "}";
+
+        // First transfer request
+        String response1 = mockMvc.perform(post("/api/transactions/transfer")
+                        .header("Idempotency-Key", key)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("Transfer completed successfully"))
+                .andReturn().getResponse().getContentAsString();
+
+        String txId1 = com.jayway.jsonpath.JsonPath.read(response1, "$.transactionId").toString();
+
+        // Second replayed transfer request
+        String response2 = mockMvc.perform(post("/api/transactions/transfer")
+                        .header("Idempotency-Key", key)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("Transfer completed successfully"))
+                .andReturn().getResponse().getContentAsString();
+
+        String txId2 = com.jayway.jsonpath.JsonPath.read(response2, "$.transactionId").toString();
+
+        // Assert that both responses return identical transaction ID (since it was handled idempotently)
+        org.junit.jupiter.api.Assertions.assertEquals(txId1, txId2);
     }
 
     @Test
