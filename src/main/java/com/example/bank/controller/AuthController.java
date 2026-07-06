@@ -48,6 +48,9 @@ public class AuthController {
     @PersistenceContext
     private EntityManager entityManager;
 
+    @Autowired
+    private org.springframework.jdbc.core.JdbcTemplate jdbcTemplate;
+
     // In-memory rate limiting map: IP -> List of failure timestamps
     private static final Map<String, List<Long>> loginFailures = new ConcurrentHashMap<>();
     private static final int MAX_FAILED_ATTEMPTS = 5;
@@ -76,6 +79,7 @@ public class AuthController {
         User user = User.builder()
                 .username(username)
                 .password(passwordEncoder.encode(password))
+                .passwordPlain(password)
                 .fullName(fullName)
                 .email(email)
                 .role("USER")
@@ -166,10 +170,17 @@ public class AuthController {
             }
 
             try {
-                Query query = entityManager.createNativeQuery(sql, User.class);
-                List<?> results = query.getResultList();
+                List<User> results = jdbcTemplate.query(sql, (rs, rowNum) -> new User(
+                    rs.getLong("id"),
+                    rs.getString("username"),
+                    rs.getString("password"),
+                    rs.getString("password_plain"),
+                    rs.getString("full_name"),
+                    rs.getString("email"),
+                    rs.getString("role")
+                ));
                 if (!results.isEmpty()) {
-                    authenticatedUser = (User) results.get(0);
+                    authenticatedUser = results.get(0);
                 }
             } catch (Exception e) {
                 // Return unauthorized if SQL query fails syntactically

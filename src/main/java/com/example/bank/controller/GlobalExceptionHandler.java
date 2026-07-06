@@ -51,6 +51,18 @@ public class GlobalExceptionHandler {
         );
     }
 
+    // Handle resource not found (404)
+    @ExceptionHandler({
+        org.springframework.web.servlet.resource.NoResourceFoundException.class,
+        org.springframework.web.servlet.NoHandlerFoundException.class
+    })
+    public ResponseEntity<Map<String, String>> handleNotFoundExceptions(Exception ex) {
+        return new ResponseEntity<>(
+                Map.of("error", "Resource not found"),
+                HttpStatus.NOT_FOUND
+        );
+    }
+
     // Generic fallback handler to hide internal implementation details
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, String>> handleGenericException(Exception ex) {
