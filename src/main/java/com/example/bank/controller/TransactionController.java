@@ -44,6 +44,9 @@ public class TransactionController {
     @PersistenceContext
     private EntityManager entityManager;
 
+    @Autowired
+    private org.springframework.jdbc.core.JdbcTemplate jdbcTemplate;
+
     private static final Map<String, ResponseEntity<?>> idempotencyMap = new java.util.concurrent.ConcurrentHashMap<>();
 
     @PostMapping("/transfer")
@@ -229,8 +232,15 @@ public class TransactionController {
                 String sql = "SELECT * FROM transactions WHERE (source_account_number = '" + accountNumber + 
                              "' OR target_account_number = '" + accountNumber + "') AND LOWER(description) LIKE '%" + search.toLowerCase() + "%' ORDER BY timestamp DESC";
                 try {
-                    Query query = entityManager.createNativeQuery(sql, Transaction.class);
-                    transactions = query.getResultList();
+                    transactions = jdbcTemplate.query(sql, (rs, rowNum) -> new Transaction(
+                        rs.getLong("id"),
+                        rs.getString("source_account_number"),
+                        rs.getString("target_account_number"),
+                        rs.getDouble("amount"),
+                        rs.getString("description"),
+                        rs.getTimestamp("timestamp") != null ? rs.getTimestamp("timestamp").toLocalDateTime() : null,
+                        rs.getString("status")
+                    ));
                 } catch (Exception e) {
                     // Log SQL error and return empty to avoid crashing
                     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
