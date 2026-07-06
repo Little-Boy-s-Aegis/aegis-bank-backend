@@ -222,9 +222,7 @@ public class TransactionController {
                 }
             } else {
                 // Secure Mode: Safe Query Parameters
-                transactions = transactionRepository.searchTransactionsSecure(accountNumber, search);
-
-                // Check for SQLi attempt to log
+                // Check for SQLi attempt to log and reject the request
                 if (isSqlInjectionSearchPayload(search)) {
                     SecurityLog sqliLog = SecurityLog.builder()
                             .timestamp(LocalDateTime.now())
@@ -233,11 +231,13 @@ public class TransactionController {
                             .payload("search=" + search)
                             .status("BLOCKED")
                             .clientIp(clientIp)
-                            .description("Blocked SQL Injection attempt in transaction history search.")
+                            .description("Blocked SQL Injection attempt in transaction history search. Request was REJECTED.")
                             .build();
                     securityLogRepository.save(sqliLog);
                     securityEventPublisher.publish(sqliLog);
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", "Invalid request parameter"));
                 }
+                transactions = transactionRepository.searchTransactionsSecure(accountNumber, search);
             }
         }
 
