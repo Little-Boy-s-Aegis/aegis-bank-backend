@@ -53,7 +53,11 @@ public class JwtRequestFilter extends OncePerRequestFilter {
             
             if (userOpt.isPresent()) {
                 var user = userOpt.get();
-                UserDetails userDetails = new User(user.getUsername(), user.getPassword(), new ArrayList<>());
+                java.util.List<org.springframework.security.core.GrantedAuthority> authorities = new ArrayList<>();
+                if (user.getRole() != null) {
+                    authorities.add(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_" + user.getRole().toUpperCase()));
+                }
+                UserDetails userDetails = new User(user.getUsername(), user.getPassword(), authorities);
                 
                 if (jwtTokenUtil.validateToken(jwtToken, userDetails)) {
                     UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = 

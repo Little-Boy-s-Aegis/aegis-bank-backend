@@ -31,7 +31,7 @@ public class SecurityControlControllerTest {
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser(roles = "ADMIN")
     public void testToggleSecuritySetting() throws Exception {
         mockMvc.perform(post("/api/admin/security/toggle")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -44,6 +44,15 @@ public class SecurityControlControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"vulnerability\":\"invalid_vuln\",\"enabled\":true}"))
                 .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @WithMockUser(roles = "USER")
+    public void testToggleSecuritySettingForbiddenForNormalUser() throws Exception {
+        mockMvc.perform(post("/api/admin/security/toggle")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"vulnerability\":\"sqli\",\"enabled\":true}"))
+                .andExpect(status().isForbidden());
     }
 
     @Test
@@ -64,10 +73,17 @@ public class SecurityControlControllerTest {
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser(roles = "ADMIN")
     public void testClearLogs() throws Exception {
         mockMvc.perform(post("/api/admin/security/logs/clear"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value("Security logs cleared"));
+    }
+
+    @Test
+    @WithMockUser(roles = "USER")
+    public void testClearLogsForbiddenForNormalUser() throws Exception {
+        mockMvc.perform(post("/api/admin/security/logs/clear"))
+                .andExpect(status().isForbidden());
     }
 }
