@@ -67,11 +67,36 @@ public class AuthController {
             return ResponseEntity.badRequest().body(Map.of("error", "Missing required fields"));
         }
 
-        if (userRepository.findByUsername(username).isPresent()) {
+        // Trim values
+        username = username.trim();
+        password = password.trim();
+        fullName = fullName.trim();
+        email = email.trim();
+
+        if (username.isEmpty() || password.isEmpty() || fullName.isEmpty() || email.isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Fields cannot be blank"));
+        }
+
+        // Validate Username (alphanumeric, underscores, hyphens, periods, 3-30 chars)
+        if (!username.matches("^[a-zA-Z0-9_.-]{3,30}$")) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Username must be 3-30 characters and contain only letters, numbers, underscores, hyphens, or periods"));
+        }
+
+        // Validate Password (min 6 chars)
+        if (password.length() < 6) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Password must be at least 6 characters long"));
+        }
+
+        // Validate Email format
+        if (!email.matches("^[a-zA-Z0-9_+&*-]+(?:\\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,7}$")) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Invalid email format"));
+        }
+
+        if (userRepository.findByUsernameIgnoreCase(username).isPresent()) {
             return ResponseEntity.badRequest().body(Map.of("error", "Username already exists"));
         }
 
-        if (userRepository.findByEmail(email).isPresent()) {
+        if (userRepository.findByEmailIgnoreCase(email).isPresent()) {
             return ResponseEntity.badRequest().body(Map.of("error", "Email already exists"));
         }
 
