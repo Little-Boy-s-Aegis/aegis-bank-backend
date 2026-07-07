@@ -87,8 +87,8 @@ public class TransactionController {
         }
 
         // 3. Defensive Checks (Parameter Tampering Mitigation)
+        // Secure Mode Check A: Check if the logged-in user owns the source account
         if (!settings.isParamTamperingEnabled()) {
-            // Secure Mode Check A: Check if the logged-in user owns the source account
             if (!sourceAccount.getUser().getUsername().equalsIgnoreCase(currentUsername)) {
                 SecurityLog paramTamperLog = SecurityLog.builder()
                         .timestamp(LocalDateTime.now())
@@ -105,32 +105,32 @@ public class TransactionController {
                         "error", "Forbidden: You do not own the source account."
                 ));
             }
+        }
 
-            // Secure Mode Check B: Check if transfer amount is positive
-            if (amount <= 0) {
-                SecurityLog amountTamperLog = SecurityLog.builder()
-                        .timestamp(LocalDateTime.now())
-                        .attackType("PARAMETER_TAMPERING")
-                        .endpoint("POST /api/transactions/transfer")
-                        .payload("Amount: " + amount)
-                        .status("BLOCKED")
-                        .clientIp(clientIp)
-                        .description("Blocked money transfer with non-positive amount: " + amount)
-                        .build();
-                securityLogRepository.save(amountTamperLog);
-                securityEventPublisher.publish(amountTamperLog);
-                return ResponseEntity.badRequest().body(Map.of(
-                        "amount", "Amount must be a positive number greater than zero",
-                        "error", "Amount must be a positive number greater than zero"
-                ));
-            }
+        // Secure Mode Check B: Check if transfer amount is positive (Always enforced for API safety)
+        if (amount <= 0) {
+            SecurityLog amountTamperLog = SecurityLog.builder()
+                    .timestamp(LocalDateTime.now())
+                    .attackType("PARAMETER_TAMPERING")
+                    .endpoint("POST /api/transactions/transfer")
+                    .payload("Amount: " + amount)
+                    .status("BLOCKED")
+                    .clientIp(clientIp)
+                    .description("Blocked money transfer with non-positive amount: " + amount)
+                    .build();
+            securityLogRepository.save(amountTamperLog);
+            securityEventPublisher.publish(amountTamperLog);
+            return ResponseEntity.badRequest().body(Map.of(
+                    "amount", "Amount must be a positive number greater than zero",
+                    "error", "Amount must be a positive number greater than zero"
+            ));
+        }
 
-            // Secure Mode Check C: Check if source balance is sufficient
-            if (sourceAccount.getBalance() < amount) {
-                return ResponseEntity.badRequest().body(Map.of(
-                        "error", "Insufficient balance."
-                ));
-            }
+        // Secure Mode Check C: Check if source balance is sufficient (Always enforced for API safety)
+        if (sourceAccount.getBalance() < amount) {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "error", "Insufficient balance."
+            ));
         }
 
         // 4. Stored XSS Check
