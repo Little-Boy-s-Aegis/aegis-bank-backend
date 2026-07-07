@@ -118,8 +118,20 @@ public class TransactionController {
                 return response;
             }
 
-            Account sourceAccount = accountRepository.findByAccountNumber(sourceAccountNumber).orElse(null);
-            Account targetAccount = accountRepository.findByAccountNumber(targetAccountNumber).orElse(null);
+            Account sourceAccount;
+            Account targetAccount;
+            if (sourceAccountNumber != null && targetAccountNumber != null && !settings.isParamTamperingEnabled()) {
+                if (sourceAccountNumber.compareTo(targetAccountNumber) < 0) {
+                    sourceAccount = accountRepository.findByAccountNumberWithLock(sourceAccountNumber).orElse(null);
+                    targetAccount = accountRepository.findByAccountNumberWithLock(targetAccountNumber).orElse(null);
+                } else {
+                    targetAccount = accountRepository.findByAccountNumberWithLock(targetAccountNumber).orElse(null);
+                    sourceAccount = accountRepository.findByAccountNumberWithLock(sourceAccountNumber).orElse(null);
+                }
+            } else {
+                sourceAccount = accountRepository.findByAccountNumber(sourceAccountNumber).orElse(null);
+                targetAccount = accountRepository.findByAccountNumber(targetAccountNumber).orElse(null);
+            }
 
             // Validate Target Account
             if (targetAccount == null) {
