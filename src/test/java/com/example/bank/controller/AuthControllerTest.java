@@ -92,6 +92,48 @@ public class AuthControllerTest {
     }
 
     @Test
+    public void testRegisterUserValidation() throws Exception {
+        // Test malformed email
+        String bodyMalformedEmail = "{" +
+                "\"username\":\"new_user_1\"," +
+                "\"password\":\"password123\"," +
+                "\"fullName\":\"New User\"," +
+                "\"email\":\"invalid-email-format\"" +
+                "}";
+        mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(bodyMalformedEmail))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("Invalid email format"));
+
+        // Test duplicate email (case-insensitive)
+        String bodyDuplicateEmail = "{" +
+                "\"username\":\"new_user_2\"," +
+                "\"password\":\"password123\"," +
+                "\"fullName\":\"New User\"," +
+                "\"email\":\"ALICE@demo-bank.com\"" + // alice@demo-bank.com is seeded
+                "}";
+        mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(bodyDuplicateEmail))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("Email already exists"));
+
+        // Test duplicate username (case-insensitive)
+        String bodyDuplicateUsername = "{" +
+                "\"username\":\"ALICE\"," + // alice is seeded
+                "\"password\":\"password123\"," +
+                "\"fullName\":\"New User\"," +
+                "\"email\":\"new_user_email@example.com\"" +
+                "}";
+        mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(bodyDuplicateUsername))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("Username already exists"));
+    }
+
+    @Test
     public void testLoginSuccessSecureMode() throws Exception {
         mockMvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)

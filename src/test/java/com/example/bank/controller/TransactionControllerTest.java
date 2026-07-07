@@ -139,6 +139,40 @@ public class TransactionControllerTest {
 
     @Test
     @WithMockUser(username = "alice")
+    public void testTransferMoneyFingerprintIdempotentWithoutHeader() throws Exception {
+        String body = "{" +
+                "\"sourceAccountNumber\":\"ACC-123456\"," +
+                "\"targetAccountNumber\":\"ACC-987654\"," +
+                "\"amount\":20.00," +
+                "\"description\":\"Fingerprint test\"" +
+                "}";
+
+        // First transfer request
+        String response1 = mockMvc.perform(post("/api/transactions/transfer")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("Transfer completed successfully"))
+                .andReturn().getResponse().getContentAsString();
+
+        String txId1 = com.jayway.jsonpath.JsonPath.read(response1, "$.transactionId").toString();
+
+        // Second replayed transfer request without any header
+        String response2 = mockMvc.perform(post("/api/transactions/transfer")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("Transfer completed successfully"))
+                .andReturn().getResponse().getContentAsString();
+
+        String txId2 = com.jayway.jsonpath.JsonPath.read(response2, "$.transactionId").toString();
+
+        // Assert that both responses return identical transaction ID (handled by fingerprint)
+        org.junit.jupiter.api.Assertions.assertEquals(txId1, txId2);
+    }
+
+    @Test
+    @WithMockUser(username = "alice")
     public void testGetTransactionHistoryIDORBlocked() throws Exception {
         // ACC-987654 belongs to Bob, not Alice
         mockMvc.perform(get("/api/transactions/history")
@@ -153,5 +187,118 @@ public class TransactionControllerTest {
         mockMvc.perform(get("/api/transactions/history")
                         .param("accountNumber", "ACC-123456"))
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    @WithMockUser(username = "alice")
+    public void testTransferMoneySameAccountBlocked() throws Exception {
+        String body = "{" +
+                "\"sourceAccountNumber\":\"ACC-123456\"," +
+                "\"targetAccountNumber\":\"ACC-123456\"," +
+                "\"amount\":100.00," +
+                "\"description\":\"Self transfer\"" +
+                "}";
+
+        mockMvc.perform(post("/api/transactions/transfer")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("Cannot transfer to the same account."));
+    }
+
+    @Test
+    @WithMockUser(username = "alice")
+    public void testTransferMoneyTinyAmountBlocked() throws Exception {
+        String body = "{" +
+                "\"sourceAccountNumber\":\"ACC-123456\"," +
+                "\"targetAccountNumber\":\"ACC-987654\"," +
+                "\"amount\":0.005," +
+                "\"description\":\"Tiny amount\"" +
+                "}";
+
+        mockMvc.perform(post("/api/transactions/transfer")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @WithMockUser(username = "alice")
+    public void testTransferMoneyStringAmountBlocked() throws Exception {
+        String body = "{" +
+                "\"sourceAccountNumber\":\"ACC-123456\"," +
+                "\"targetAccountNumber\":\"ACC-987654\"," +
+                "\"amount\":\"10.00\"," +
+                "\"description\":\"String amount\"" +
+                "}";
+
+        mockMvc.perform(post("/api/transactions/transfer")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @WithMockUser(username = "alice")
+    public void testTransferMoneyTooManyDecimalsBlocked() throws Exception {
+        String body = "{" +
+                "\"sourceAccountNumber\":\"ACC-123456\"," +
+                "\"targetAccountNumber\":\"ACC-987654\"," +
+                "\"amount\":10.001," +
+                "\"description\":\"Too many decimals\"" +
+                "}";
+
+        mockMvc.perform(post("/api/transactions/transfer")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @WithMockUser(username = "alice")
+    public void testTransferMoneyLimitExceededBlocked() throws Exception {
+        String body = "{" +
+                "\"sourceAccountNumber\":\"ACC-123456\"," +
+                "\"targetAccountNumber\":\"ACC-987654\"," +
+                "\"amount\":99999999.00," +
+                "\"description\":\"Above limit\"" +
+                "}";
+
+        mockMvc.perform(post("/api/transactions/transfer")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @WithMockUser(username = "alice")
+    public void testTransferMoneyNaNBlocked() throws Exception {
+        String body = "{" +
+                "\"sourceAccountNumber\":\"ACC-123456\"," +
+                "\"targetAccountNumber\":\"ACC-987654\"," +
+                "\"amount\":NaN," +
+                "\"description\":\"NaN amount\"" +
+                "}";
+
+        mockMvc.perform(post("/api/transactions/transfer")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @WithMockUser(username = "alice")
+    public void testTransferMoneyInfinityBlocked() throws Exception {
+        String body = "{" +
+                "\"sourceAccountNumber\":\"ACC-123456\"," +
+                "\"targetAccountNumber\":\"ACC-987654\"," +
+                "\"amount\":Infinity," +
+                "\"description\":\"Infinity amount\"" +
+                "}";
+
+        mockMvc.perform(post("/api/transactions/transfer")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isBadRequest());
     }
 }
