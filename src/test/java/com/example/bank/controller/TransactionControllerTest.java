@@ -139,6 +139,40 @@ public class TransactionControllerTest {
 
     @Test
     @WithMockUser(username = "alice")
+    public void testTransferMoneyFingerprintIdempotentWithoutHeader() throws Exception {
+        String body = "{" +
+                "\"sourceAccountNumber\":\"ACC-123456\"," +
+                "\"targetAccountNumber\":\"ACC-987654\"," +
+                "\"amount\":20.00," +
+                "\"description\":\"Fingerprint test\"" +
+                "}";
+
+        // First transfer request
+        String response1 = mockMvc.perform(post("/api/transactions/transfer")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("Transfer completed successfully"))
+                .andReturn().getResponse().getContentAsString();
+
+        String txId1 = com.jayway.jsonpath.JsonPath.read(response1, "$.transactionId").toString();
+
+        // Second replayed transfer request without any header
+        String response2 = mockMvc.perform(post("/api/transactions/transfer")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("Transfer completed successfully"))
+                .andReturn().getResponse().getContentAsString();
+
+        String txId2 = com.jayway.jsonpath.JsonPath.read(response2, "$.transactionId").toString();
+
+        // Assert that both responses return identical transaction ID (handled by fingerprint)
+        org.junit.jupiter.api.Assertions.assertEquals(txId1, txId2);
+    }
+
+    @Test
+    @WithMockUser(username = "alice")
     public void testGetTransactionHistoryIDORBlocked() throws Exception {
         // ACC-987654 belongs to Bob, not Alice
         mockMvc.perform(get("/api/transactions/history")

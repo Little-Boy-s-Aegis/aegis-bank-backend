@@ -47,7 +47,16 @@ public class TransactionController {
     @Autowired
     private org.springframework.jdbc.core.JdbcTemplate jdbcTemplate;
 
-    private static final Map<String, ResponseEntity<?>> idempotencyMap = new java.util.concurrent.ConcurrentHashMap<>();
+    private static class CachedResponse {
+        final ResponseEntity<?> response;
+        final long timestamp;
+        CachedResponse(ResponseEntity<?> response) {
+            this.response = response;
+            this.timestamp = System.currentTimeMillis();
+        }
+    }
+
+    private static final Map<String, CachedResponse> idempotencyMap = new java.util.concurrent.ConcurrentHashMap<>();
 
     @PostMapping("/transfer")
     @Transactional
@@ -60,10 +69,27 @@ public class TransactionController {
             idempotencyKey = servletRequest.getHeader("X-Idempotency-Key");
         }
 
+        final String mapKey;
+        final boolean isExplicitKey;
         if (idempotencyKey != null && !idempotencyKey.trim().isEmpty()) {
-            ResponseEntity<?> cachedResponse = idempotencyMap.get(idempotencyKey);
-            if (cachedResponse != null) {
-                return cachedResponse;
+            mapKey = idempotencyKey;
+            isExplicitKey = true;
+        } else {
+            mapKey = "fingerprint:" + currentUsername + ":" + payload.getSourceAccountNumber() + ":" + payload.getTargetAccountNumber() + ":" + payload.getAmount() + ":" + payload.getDescription();
+            isExplicitKey = false;
+        }
+
+        CachedResponse cached = idempotencyMap.get(mapKey);
+        if (cached != null) {
+            if (isExplicitKey) {
+                return cached.response;
+            } else {
+                // Return cached response if replayed within 10 seconds
+                if (System.currentTimeMillis() - cached.timestamp < 10000) {
+                    return cached.response;
+                } else {
+                    idempotencyMap.remove(mapKey);
+                }
             }
         }
 
@@ -177,9 +203,7 @@ public class TransactionController {
                 "transactionId", tx.getId(),
                 "sourceBalance", sourceAccount.getBalance()
         ));
-        if (idempotencyKey != null && !idempotencyKey.trim().isEmpty()) {
-            idempotencyMap.put(idempotencyKey, successResponse);
-        }
+        idempotencyMap.put(mapKey, new CachedResponse(successResponse));
         return successResponse;
     }
 
