@@ -269,4 +269,36 @@ public class TransactionControllerTest {
                         .content(body))
                 .andExpect(status().isBadRequest());
     }
+
+    @Test
+    @WithMockUser(username = "alice")
+    public void testTransferMoneyNaNBlocked() throws Exception {
+        String body = "{" +
+                "\"sourceAccountNumber\":\"ACC-123456\"," +
+                "\"targetAccountNumber\":\"ACC-987654\"," +
+                "\"amount\":NaN," +
+                "\"description\":\"NaN amount\"" +
+                "}";
+
+        mockMvc.perform(post("/api/transactions/transfer")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @WithMockUser(username = "alice")
+    public void testTransferMoneyInfinityBlocked() throws Exception {
+        String body = "{" +
+                "\"sourceAccountNumber\":\"ACC-123456\"," +
+                "\"targetAccountNumber\":\"ACC-987654\"," +
+                "\"amount\":Infinity," +
+                "\"description\":\"Infinity amount\"" +
+                "}";
+
+        mockMvc.perform(post("/api/transactions/transfer")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isBadRequest());
+    }
 }

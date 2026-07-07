@@ -155,6 +155,11 @@ public class TransactionController {
             }
 
             // Secure Mode Check B: Validate transfer amount (positive, minimum, decimal limit, max limit)
+            if (amount == null || Double.isNaN(amount) || Double.isInfinite(amount)) {
+                response = ResponseEntity.badRequest().body(Map.of("error", "Amount must be a valid finite number"));
+                return response;
+            }
+
             if (amount <= 0) {
                 SecurityLog amountTamperLog = SecurityLog.builder()
                         .timestamp(LocalDateTime.now())
