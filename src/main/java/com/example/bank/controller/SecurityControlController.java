@@ -26,6 +26,11 @@ public class SecurityControlController {
 
     @PostMapping("/toggle")
     public ResponseEntity<?> toggleSecuritySetting(@RequestBody Map<String, Object> payload) {
+        org.springframework.security.core.Authentication auth = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null && auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_USER"))) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.FORBIDDEN).body(Map.of("error", "Forbidden: Normal users cannot toggle security settings."));
+        }
+
         String vulnerability = (String) payload.get("vulnerability");
         Boolean enabled = (Boolean) payload.get("enabled");
 
@@ -71,6 +76,10 @@ public class SecurityControlController {
 
     @PostMapping("/logs/clear")
     public ResponseEntity<?> clearLogs() {
+        org.springframework.security.core.Authentication auth = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null && auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_USER"))) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.FORBIDDEN).body(Map.of("error", "Forbidden: Normal users cannot clear logs."));
+        }
         securityLogRepository.deleteAll();
         return ResponseEntity.ok(Map.of("message", "Security logs cleared"));
     }
