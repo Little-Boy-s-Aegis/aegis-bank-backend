@@ -62,7 +62,11 @@ public class TransactionController {
     @Transactional
     public ResponseEntity<?> transferMoney(@jakarta.validation.Valid @RequestBody com.example.bank.model.TransferRequest payload, HttpServletRequest servletRequest) {
         String clientIp = servletRequest.getRemoteAddr();
-        String currentUsername = SecurityContextHolder.getContext().getAuthentication().getName();
+        String currentUsername = "anonymous";
+        var auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null) {
+            currentUsername = auth.getName();
+        }
 
         String idempotencyKey = servletRequest.getHeader("Idempotency-Key");
         if (idempotencyKey == null) {
@@ -79,132 +83,173 @@ public class TransactionController {
             isExplicitKey = false;
         }
 
-        CachedResponse cached = idempotencyMap.get(mapKey);
-        if (cached != null) {
-            if (isExplicitKey) {
-                return cached.response;
-            } else {
-                // Return cached response if replayed within 10 seconds
-                if (System.currentTimeMillis() - cached.timestamp < 10000) {
-                    return cached.response;
+        CachedResponse placeholder = new CachedResponse(null);
+        CachedResponse existing = idempotencyMap.putIfAbsent(mapKey, placeholder);
+        if (existing != null) {
+            if (existing.response != null) {
+                if (isExplicitKey) {
+                    return existing.response;
                 } else {
+                    if (System.currentTimeMillis() - existing.timestamp < 10000) {
+                        return existing.response;
+                    } else {
+                        idempotencyMap.remove(mapKey);
+                        // Try again
+                        idempotencyMap.put(mapKey, placeholder);
+                    }
+                }
+            } else {
+                return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("error", "Duplicate transfer request in progress."));
+            }
+        }
+
+        ResponseEntity<?> response = null;
+        try {
+            String sourceAccountNumber = payload.getSourceAccountNumber();
+            String targetAccountNumber = payload.getTargetAccountNumber();
+            Double amount = payload.getAmount();
+            String description = payload.getDescription();
+
+            SecuritySettings settings = SecuritySettings.getInstance();
+
+            // 1. Boundary Check (API-02: Prevent transferring to same account)
+            if (sourceAccountNumber != null && sourceAccountNumber.equalsIgnoreCase(targetAccountNumber)) {
+                response = ResponseEntity.badRequest().body(Map.of("error", "Cannot transfer to the same account."));
+                return response;
+            }
+
+            Account sourceAccount = accountRepository.findByAccountNumber(sourceAccountNumber).orElse(null);
+            Account targetAccount = accountRepository.findByAccountNumber(targetAccountNumber).orElse(null);
+
+            // Validate Target Account
+            if (targetAccount == null) {
+                response = ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", "Target account not found"));
+                return response;
+            }
+
+            // Validate Source Account
+            if (sourceAccount == null) {
+                response = ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", "Source account not found"));
+                return response;
+            }
+
+            // Defensive Checks (Parameter Tampering Mitigation)
+            if (!settings.isParamTamperingEnabled()) {
+                if (!sourceAccount.getUser().getUsername().equalsIgnoreCase(currentUsername)) {
+                    SecurityLog paramTamperLog = SecurityLog.builder()
+                            .timestamp(LocalDateTime.now())
+                            .attackType("PARAMETER_TAMPERING")
+                            .endpoint("POST /api/transactions/transfer")
+                            .payload("Source attempted: " + sourceAccountNumber + " | Authenticated: " + currentUsername)
+                            .status("BLOCKED")
+                            .clientIp(clientIp)
+                            .description("Blocked transfer from account not owned by user. Potential parameter tampering.")
+                            .build();
+                    securityLogRepository.save(paramTamperLog);
+                    securityEventPublisher.publish(paramTamperLog);
+                    response = ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of(
+                            "error", "Forbidden: You do not own the source account."
+                    ));
+                    return response;
+                }
+            }
+
+            // Secure Mode Check B: Validate transfer amount (positive, minimum, decimal limit, max limit)
+            if (amount <= 0) {
+                SecurityLog amountTamperLog = SecurityLog.builder()
+                        .timestamp(LocalDateTime.now())
+                        .attackType("PARAMETER_TAMPERING")
+                        .endpoint("POST /api/transactions/transfer")
+                        .payload("Amount: " + amount)
+                        .status("BLOCKED")
+                        .clientIp(clientIp)
+                        .description("Blocked money transfer with non-positive amount: " + amount)
+                        .build();
+                securityLogRepository.save(amountTamperLog);
+                securityEventPublisher.publish(amountTamperLog);
+                response = ResponseEntity.badRequest().body(Map.of(
+                        "amount", "Amount must be a positive number greater than zero",
+                        "error", "Amount must be a positive number greater than zero"
+                ));
+                return response;
+            }
+
+            if (amount < 0.01) {
+                response = ResponseEntity.badRequest().body(Map.of("error", "Amount must be at least 0.01"));
+                return response;
+            }
+
+            if (Math.abs(amount * 100 - Math.round(amount * 100)) > 1e-9) {
+                response = ResponseEntity.badRequest().body(Map.of("error", "Amount cannot have more than 2 decimal places"));
+                return response;
+            }
+
+            if (amount > 10000000.00) {
+                response = ResponseEntity.badRequest().body(Map.of("error", "Amount exceeds the maximum transfer limit of 10,000,000.00"));
+                return response;
+            }
+
+            // Secure Mode Check C: Check if source balance is sufficient
+            if (sourceAccount.getBalance() < amount) {
+                response = ResponseEntity.badRequest().body(Map.of(
+                        "error", "Insufficient balance."
+                ));
+                return response;
+            }
+
+            // Stored XSS Check
+            String finalDescription = description;
+            if (!settings.isXssEnabled()) {
+                finalDescription = HtmlUtils.htmlEscape(description);
+                if (isXssPayload(description)) {
+                    SecurityLog xssLog = SecurityLog.builder()
+                            .timestamp(LocalDateTime.now())
+                            .attackType("XSS")
+                            .endpoint("POST /api/transactions/transfer")
+                            .payload("description=" + description)
+                            .status("DETECTED_AND_SANITIZED")
+                            .clientIp(clientIp)
+                            .description("Detected Stored XSS payload in description. HTML entities escaped.")
+                            .build();
+                    securityLogRepository.save(xssLog);
+                    securityEventPublisher.publish(xssLog);
+                }
+            }
+
+            // Execute Money Transfer
+            sourceAccount.setBalance(sourceAccount.getBalance() - amount);
+            targetAccount.setBalance(targetAccount.getBalance() + amount);
+
+            accountRepository.save(sourceAccount);
+            accountRepository.save(targetAccount);
+
+            // Save Transaction
+            Transaction tx = Transaction.builder()
+                    .sourceAccountNumber(sourceAccountNumber)
+                    .targetAccountNumber(targetAccountNumber)
+                    .amount(amount)
+                    .description(finalDescription)
+                    .timestamp(LocalDateTime.now())
+                    .status("SUCCESS")
+                    .build();
+            transactionRepository.save(tx);
+
+            response = ResponseEntity.ok(Map.of(
+                    "message", "Transfer completed successfully",
+                    "transactionId", tx.getId(),
+                    "sourceBalance", sourceAccount.getBalance()
+            ));
+            return response;
+        } finally {
+            if (response != null) {
+                idempotencyMap.put(mapKey, new CachedResponse(response));
+            } else {
+                CachedResponse current = idempotencyMap.get(mapKey);
+                if (current != null && current.response == null) {
                     idempotencyMap.remove(mapKey);
                 }
             }
         }
-
-        String sourceAccountNumber = payload.getSourceAccountNumber();
-        String targetAccountNumber = payload.getTargetAccountNumber();
-        Double amount = payload.getAmount();
-        String description = payload.getDescription();
-
-        SecuritySettings settings = SecuritySettings.getInstance();
-        Account sourceAccount = accountRepository.findByAccountNumber(sourceAccountNumber).orElse(null);
-        Account targetAccount = accountRepository.findByAccountNumber(targetAccountNumber).orElse(null);
-
-        // 1. Validate Target Account
-        if (targetAccount == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", "Target account not found"));
-        }
-
-        // 2. Validate Source Account
-        if (sourceAccount == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", "Source account not found"));
-        }
-
-        // 3. Defensive Checks (Parameter Tampering Mitigation)
-        // Secure Mode Check A: Check if the logged-in user owns the source account
-        if (!settings.isParamTamperingEnabled()) {
-            if (!sourceAccount.getUser().getUsername().equalsIgnoreCase(currentUsername)) {
-                SecurityLog paramTamperLog = SecurityLog.builder()
-                        .timestamp(LocalDateTime.now())
-                        .attackType("PARAMETER_TAMPERING")
-                        .endpoint("POST /api/transactions/transfer")
-                        .payload("Source attempted: " + sourceAccountNumber + " | Authenticated: " + currentUsername)
-                        .status("BLOCKED")
-                        .clientIp(clientIp)
-                        .description("Blocked transfer from account not owned by user. Potential parameter tampering.")
-                        .build();
-                securityLogRepository.save(paramTamperLog);
-                securityEventPublisher.publish(paramTamperLog);
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of(
-                        "error", "Forbidden: You do not own the source account."
-                ));
-            }
-        }
-
-        // Secure Mode Check B: Check if transfer amount is positive (Always enforced for API safety)
-        if (amount <= 0) {
-            SecurityLog amountTamperLog = SecurityLog.builder()
-                    .timestamp(LocalDateTime.now())
-                    .attackType("PARAMETER_TAMPERING")
-                    .endpoint("POST /api/transactions/transfer")
-                    .payload("Amount: " + amount)
-                    .status("BLOCKED")
-                    .clientIp(clientIp)
-                    .description("Blocked money transfer with non-positive amount: " + amount)
-                    .build();
-            securityLogRepository.save(amountTamperLog);
-            securityEventPublisher.publish(amountTamperLog);
-            return ResponseEntity.badRequest().body(Map.of(
-                    "amount", "Amount must be a positive number greater than zero",
-                    "error", "Amount must be a positive number greater than zero"
-            ));
-        }
-
-        // Secure Mode Check C: Check if source balance is sufficient (Always enforced for API safety)
-        if (sourceAccount.getBalance() < amount) {
-            return ResponseEntity.badRequest().body(Map.of(
-                    "error", "Insufficient balance."
-            ));
-        }
-
-        // 4. Stored XSS Check
-        String finalDescription = description;
-        if (!settings.isXssEnabled()) {
-            // Secure Mode XSS Mitigation: Escape HTML output
-            finalDescription = HtmlUtils.htmlEscape(description);
-            if (isXssPayload(description)) {
-                SecurityLog xssLog = SecurityLog.builder()
-                        .timestamp(LocalDateTime.now())
-                        .attackType("XSS")
-                        .endpoint("POST /api/transactions/transfer")
-                        .payload("description=" + description)
-                        .status("DETECTED_AND_SANITIZED")
-                        .clientIp(clientIp)
-                        .description("Detected Stored XSS payload in description. HTML entities escaped.")
-                        .build();
-                securityLogRepository.save(xssLog);
-                securityEventPublisher.publish(xssLog);
-            }
-        }
-
-        // 5. Execute Money Transfer
-        // In vulnerable mode, this can bypass the balance checks and accept negative amounts.
-        sourceAccount.setBalance(sourceAccount.getBalance() - amount);
-        targetAccount.setBalance(targetAccount.getBalance() + amount);
-
-        accountRepository.save(sourceAccount);
-        accountRepository.save(targetAccount);
-
-        // Save Transaction
-        Transaction tx = Transaction.builder()
-                .sourceAccountNumber(sourceAccountNumber)
-                .targetAccountNumber(targetAccountNumber)
-                .amount(amount)
-                .description(finalDescription)
-                .timestamp(LocalDateTime.now())
-                .status("SUCCESS")
-                .build();
-        transactionRepository.save(tx);
-
-        ResponseEntity<?> successResponse = ResponseEntity.ok(Map.of(
-                "message", "Transfer completed successfully",
-                "transactionId", tx.getId(),
-                "sourceBalance", sourceAccount.getBalance()
-        ));
-        idempotencyMap.put(mapKey, new CachedResponse(successResponse));
-        return successResponse;
     }
 
     @SuppressWarnings("unchecked")

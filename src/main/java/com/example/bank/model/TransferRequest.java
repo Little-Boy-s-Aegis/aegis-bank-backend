@@ -1,9 +1,14 @@
 package com.example.bank.model;
 
-import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonToken;
+import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import java.io.IOException;
 
 public class TransferRequest {
 
@@ -14,6 +19,7 @@ public class TransferRequest {
     private String targetAccountNumber;
 
     @NotNull(message = "Transfer amount is required")
+    @JsonDeserialize(using = StrictDoubleDeserializer.class)
     private Double amount;
 
     @NotBlank(message = "Description message is required")
@@ -59,5 +65,15 @@ public class TransferRequest {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public static class StrictDoubleDeserializer extends JsonDeserializer<Double> {
+        @Override
+        public Double deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
+            if (p.getCurrentToken() == JsonToken.VALUE_STRING) {
+                throw ctxt.weirdStringException(p.getText(), Double.class, "String values are not allowed for numeric fields");
+            }
+            return p.getValueAsDouble();
+        }
     }
 }
