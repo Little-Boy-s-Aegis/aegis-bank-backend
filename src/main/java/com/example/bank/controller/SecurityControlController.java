@@ -24,11 +24,31 @@ public class SecurityControlController {
         return ResponseEntity.ok(SecuritySettings.getInstance());
     }
 
+    private ResponseEntity<?> adminRequired(org.springframework.security.core.Authentication auth, String message) {
+        if (isAdmin(auth)) {
+            return null;
+        }
+        org.springframework.http.HttpStatus status = isAnonymous(auth)
+                ? org.springframework.http.HttpStatus.UNAUTHORIZED
+                : org.springframework.http.HttpStatus.FORBIDDEN;
+        return ResponseEntity.status(status).body(Map.of("error", message));
+    }
+
+    private boolean isAdmin(org.springframework.security.core.Authentication auth) {
+        return auth != null && auth.isAuthenticated() && auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+    }
+
+    private boolean isAnonymous(org.springframework.security.core.Authentication auth) {
+        return auth == null || !auth.isAuthenticated() || auth instanceof org.springframework.security.authentication.AnonymousAuthenticationToken;
+    }
+
     @PostMapping("/toggle")
     public ResponseEntity<?> toggleSecuritySetting(@RequestBody Map<String, Object> payload) {
         org.springframework.security.core.Authentication auth = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
-        if (auth != null && auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_USER"))) {
-            return ResponseEntity.status(org.springframework.http.HttpStatus.FORBIDDEN).body(Map.of("error", "Forbidden: Normal users cannot toggle security settings."));
+        ResponseEntity<?> adminCheck = adminRequired(auth, "Admin role required to toggle security settings.");
+        if (adminCheck != null) {
+            return adminCheck;
         }
 
         String vulnerability = (String) payload.get("vulnerability");
@@ -67,9 +87,14 @@ public class SecurityControlController {
 
     @GetMapping("/logs")
     public ResponseEntity<?> getSecurityLogs(@RequestHeader(value = "X-Aegis-Token", required = false) String token) {
-        if (token == null || !token.equals(syncToken)) {
-            return ResponseEntity.status(org.springframework.http.HttpStatus.UNAUTHORIZED)
-                    .body(Map.of("error", "Unauthorized: Invalid Aegis Sync Token"));
+        org.springframework.security.core.Authentication auth = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+        boolean validSyncToken = token != null && token.equals(syncToken);
+        if (!validSyncToken && !isAdmin(auth)) {
+            org.springframework.http.HttpStatus status = isAnonymous(auth)
+                    ? org.springframework.http.HttpStatus.UNAUTHORIZED
+                    : org.springframework.http.HttpStatus.FORBIDDEN;
+            return ResponseEntity.status(status)
+                    .body(Map.of("error", "Admin role or valid Aegis Sync Token required."));
         }
         return ResponseEntity.ok(securityLogRepository.findAllByOrderByTimestampDesc());
     }
@@ -77,8 +102,9 @@ public class SecurityControlController {
     @PostMapping("/logs/clear")
     public ResponseEntity<?> clearLogs() {
         org.springframework.security.core.Authentication auth = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
-        if (auth != null && auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_USER"))) {
-            return ResponseEntity.status(org.springframework.http.HttpStatus.FORBIDDEN).body(Map.of("error", "Forbidden: Normal users cannot clear logs."));
+        ResponseEntity<?> adminCheck = adminRequired(auth, "Admin role required to clear logs.");
+        if (adminCheck != null) {
+            return adminCheck;
         }
         securityLogRepository.deleteAll();
         return ResponseEntity.ok(Map.of("message", "Security logs cleared"));
