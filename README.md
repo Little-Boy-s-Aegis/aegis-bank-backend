@@ -85,3 +85,15 @@ docker run -d -p 8080:8080 \
   --name aegis-backend-service \
   aegis-bank-backend
 ```
+
+---
+
+## 🔒 Security Hardening & Defensive Controls
+
+The backend includes several defensive controls to mitigate common vulnerabilities and infrastructure bugs:
+
+* **JWT Collision Mitigation**: Enforces unique UUID-based `jti` (JWT ID) claims in JWT tokens. This eliminates collision-induced 401 Unauthorized exceptions during high-frequency integration test executions in CI pipelines.
+* **Transfer Parameter Validation**: Restricts transfer transactions to block NaN (Not a Number) and Infinite Double values, ensuring mathematical safety against balance tampering.
+* **Concurrency Protection**: Implements backend synchronization locks on sensitive routes to prevent race conditions (such as double-spending attempts during funds transfer).
+* **Rate Limiting**: Defends API endpoints against brute force attempts and denial-of-service vectors.
+
