@@ -60,8 +60,8 @@ public class SecurityConfig {
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/admin/security/status").permitAll()
                 .requestMatchers("/api/admin/security/logs").permitAll() // internally validated via X-Aegis-Token
-                .requestMatchers("/api/admin/security/toggle").permitAll()
-                .requestMatchers("/api/admin/security/logs/clear").permitAll()
+                .requestMatchers("/api/admin/security/toggle").hasRole("ADMIN")
+                .requestMatchers("/api/admin/security/logs/clear").hasRole("ADMIN")
                 .requestMatchers("/h2-console/**").permitAll()
                 .requestMatchers("/manager/**", "/host-manager/**").permitAll()
                 .anyRequest().authenticated()

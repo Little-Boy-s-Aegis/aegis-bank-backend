@@ -73,6 +73,21 @@ public class SecurityControlControllerTest {
     }
 
     @Test
+    public void testToggleSecuritySettingRequiresAuthentication() throws Exception {
+        mockMvc.perform(post("/api/admin/security/toggle")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"vulnerability\":\"sqli\",\"enabled\":true}"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    public void testGetSecurityLogsAuthorizedForAdmin() throws Exception {
+        mockMvc.perform(get("/api/admin/security/logs"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
     @WithMockUser(roles = "ADMIN")
     public void testClearLogs() throws Exception {
         mockMvc.perform(post("/api/admin/security/logs/clear"))
@@ -85,5 +100,11 @@ public class SecurityControlControllerTest {
     public void testClearLogsForbiddenForNormalUser() throws Exception {
         mockMvc.perform(post("/api/admin/security/logs/clear"))
                 .andExpect(status().isForbidden());
+    }
+
+    @Test
+    public void testClearLogsRequiresAuthentication() throws Exception {
+        mockMvc.perform(post("/api/admin/security/logs/clear"))
+                .andExpect(status().isUnauthorized());
     }
 }
