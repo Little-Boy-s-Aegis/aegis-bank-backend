@@ -137,7 +137,7 @@ public class AuthController {
     public ResponseEntity<?> loginUser(@RequestBody Map<String, String> request, HttpServletRequest servletRequest) {
         String username = request.get("username");
         String password = request.get("password");
-        String clientIp = servletRequest.getRemoteAddr();
+        String clientIp = getClientIp(servletRequest);
 
         if (username == null || password == null) {
             return ResponseEntity.badRequest().body(Map.of("error", "Missing username or password"));
@@ -317,5 +317,17 @@ public class AuthController {
         if (input == null) return false;
         String lower = input.toLowerCase();
         return lower.contains("<") || lower.contains(">") || lower.contains("script") || lower.contains("alert(") || lower.contains("javascript:") || lower.contains("onload=") || lower.contains("onerror=");
+    }
+
+    private String getClientIp(jakarta.servlet.http.HttpServletRequest request) {
+        String xff = request.getHeader("X-Forwarded-For");
+        if (xff != null && !xff.isBlank()) {
+            return xff.split(",")[0].trim();
+        }
+        String xri = request.getHeader("X-Real-IP");
+        if (xri != null && !xri.isBlank()) {
+            return xri.trim();
+        }
+        return request.getRemoteAddr();
     }
 }

@@ -145,6 +145,15 @@ public class IpBlockFilter extends OncePerRequestFilter {
             """);
     }
 
+    private boolean isPrivateOrLoopback(String ipStr) {
+        try {
+            InetAddress addr = InetAddress.getByName(ipStr.trim());
+            return addr.isLoopbackAddress() || addr.isSiteLocalAddress() || addr.isAnyLocalAddress();
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
     private List<String> getClientIpCandidates(HttpServletRequest request) {
         Set<String> ips = new LinkedHashSet<>();
         addIpCandidate(ips, request.getHeader("X-Real-IP"));
@@ -158,7 +167,14 @@ public class IpBlockFilter extends OncePerRequestFilter {
         }
 
         addIpCandidate(ips, request.getRemoteAddr());
-        return new ArrayList<>(ips);
+        
+        List<String> candidates = new ArrayList<>();
+        for (String ip : ips) {
+            if (!isPrivateOrLoopback(ip)) {
+                candidates.add(ip);
+            }
+        }
+        return candidates;
     }
 
     private void addIpCandidate(Set<String> ips, String value) {

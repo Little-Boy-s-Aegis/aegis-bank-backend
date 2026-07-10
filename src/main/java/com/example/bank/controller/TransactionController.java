@@ -66,7 +66,7 @@ public class TransactionController {
     @PostMapping("/transfer")
     @Transactional
     public ResponseEntity<?> transferMoney(@jakarta.validation.Valid @RequestBody com.example.bank.model.TransferRequest payload, HttpServletRequest servletRequest) {
-        String clientIp = servletRequest.getRemoteAddr();
+        String clientIp = getClientIp(servletRequest);
         String currentUsername = "anonymous";
         var auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth != null) {
@@ -304,7 +304,7 @@ public class TransactionController {
             @RequestParam(required = false) String search,
             HttpServletRequest servletRequest) {
 
-        String clientIp = servletRequest.getRemoteAddr();
+        String clientIp = getClientIp(servletRequest);
         String currentUsername = SecurityContextHolder.getContext().getAuthentication().getName();
 
         Account myAccount = accountRepository.findByAccountNumber(accountNumber).orElse(null);
@@ -396,5 +396,17 @@ public class TransactionController {
         if (input == null) return false;
         String lower = input.toLowerCase();
         return lower.contains("'") || lower.contains("--") || lower.contains("/*") || lower.contains(" or ") || lower.contains(" union ");
+    }
+
+    private String getClientIp(jakarta.servlet.http.HttpServletRequest request) {
+        String xff = request.getHeader("X-Forwarded-For");
+        if (xff != null && !xff.isBlank()) {
+            return xff.split(",")[0].trim();
+        }
+        String xri = request.getHeader("X-Real-IP");
+        if (xri != null && !xri.isBlank()) {
+            return xri.trim();
+        }
+        return request.getRemoteAddr();
     }
 }
