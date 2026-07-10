@@ -118,10 +118,10 @@ public class AuthController {
             accNum = "ACC-" + (100000 + rand.nextInt(900000));
         }
 
-        // Create Account with default balance 5,000,000 VND
+        // Create Account with default balance 20,000,000 VND
         Account account = Account.builder()
                 .accountNumber(accNum)
-                .balance(5000000.0)
+                .balance(20000000.0)
                 .currency("VND")
                 .user(user)
                 .build();
