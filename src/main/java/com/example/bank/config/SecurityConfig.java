@@ -22,6 +22,9 @@ public class SecurityConfig {
     @Autowired
     private JwtRequestFilter jwtRequestFilter;
 
+    @Autowired
+    private IpBlockFilter ipBlockFilter;
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
@@ -61,6 +64,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/admin/security/status").permitAll()
                 .requestMatchers("/api/admin/security/logs").permitAll() // internally validated via X-Aegis-Token
+                .requestMatchers("/api/admin/security/banned-ips/**").permitAll() // internally validated via X-Aegis-Token
                 .requestMatchers("/api/admin/security/toggle").hasRole("ADMIN")
                 .requestMatchers("/api/admin/security/logs/clear").hasRole("ADMIN")
                 .requestMatchers("/h2-console/**").permitAll()
@@ -69,6 +73,7 @@ public class SecurityConfig {
             )
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
+        http.addFilterBefore(ipBlockFilter, UsernamePasswordAuthenticationFilter.class);
         http.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
@@ -82,7 +87,11 @@ public class SecurityConfig {
             "http://127.0.0.1",
             "http://127.0.0.1:*",
             "http://*.aegis.com",
-            "https://*.aegis.com"
+            "https://*.aegis.com",
+            "http://littleboys.biz",
+            "http://*.littleboys.biz",
+            "https://littleboys.biz",
+            "https://*.littleboys.biz"
         ));
         configuration.addAllowedMethod("*");
         configuration.addAllowedHeader("*");
