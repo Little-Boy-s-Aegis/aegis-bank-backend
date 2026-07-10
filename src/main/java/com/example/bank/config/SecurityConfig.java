@@ -57,6 +57,7 @@ public class SecurityConfig {
                 .authenticationEntryPoint(new org.springframework.security.web.authentication.HttpStatusEntryPoint(org.springframework.http.HttpStatus.UNAUTHORIZED))
             )
             .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/health").permitAll()
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/admin/security/status").permitAll()
                 .requestMatchers("/api/admin/security/logs").permitAll() // internally validated via X-Aegis-Token
