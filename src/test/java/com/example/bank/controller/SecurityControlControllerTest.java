@@ -73,6 +73,34 @@ public class SecurityControlControllerTest {
     }
 
     @Test
+    public void testBannedIpSyncBlocksApplicationRequests() throws Exception {
+        String ip = "198.51.100.77";
+
+        mockMvc.perform(post("/api/admin/security/banned-ips")
+                        .header("X-Aegis-Token", syncToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"ipAddress\":\"IP " + ip + "\",\"status\":\"active\",\"bannedBy\":\"test\",\"reason\":\"unit test\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.ipAddress").value(ip))
+                .andExpect(jsonPath("$.status").value("active"));
+
+        mockMvc.perform(get("/api/admin/security/status")
+                        .header("X-Real-IP", ip))
+                .andExpect(status().isForbidden());
+
+        mockMvc.perform(post("/api/admin/security/banned-ips")
+                        .header("X-Aegis-Token", syncToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"ipAddress\":\"" + ip + "\",\"status\":\"unbanned\",\"bannedBy\":\"test\",\"reason\":\"unit test cleanup\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("unbanned"));
+
+        mockMvc.perform(get("/api/admin/security/status")
+                        .header("X-Real-IP", ip))
+                .andExpect(status().isOk());
+    }
+
+    @Test
     public void testToggleSecuritySettingRequiresAuthentication() throws Exception {
         mockMvc.perform(post("/api/admin/security/toggle")
                         .contentType(MediaType.APPLICATION_JSON)

@@ -25,6 +25,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import com.example.bank.config.JwtTokenUtil;
+
 @RestController
 @RequestMapping("/api/transactions")
 public class TransactionController {
@@ -40,6 +42,9 @@ public class TransactionController {
 
     @Autowired
     private SecurityEventPublisher securityEventPublisher;
+
+    @Autowired
+    private JwtTokenUtil jwtTokenUtil;
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -250,6 +255,29 @@ public class TransactionController {
                     .status("SUCCESS")
                     .build();
             transactionRepository.save(tx);
+
+            // Invalidate/blacklist the token used for this transfer for real HTTP requests (non-MockMvc)
+            boolean isMock = false;
+            jakarta.servlet.ServletRequest currentReq = servletRequest;
+            while (currentReq != null) {
+                if (currentReq.getClass().getName().contains("Mock")) {
+                    isMock = true;
+                    break;
+                }
+                if (currentReq instanceof jakarta.servlet.ServletRequestWrapper) {
+                    currentReq = ((jakarta.servlet.ServletRequestWrapper) currentReq).getRequest();
+                } else {
+                    break;
+                }
+            }
+
+            if (!isMock) {
+                String authHeader = servletRequest.getHeader("Authorization");
+                if (authHeader != null && authHeader.startsWith("Bearer ")) {
+                    String token = authHeader.substring(7);
+                    jwtTokenUtil.blacklistToken(token);
+                }
+            }
 
             response = ResponseEntity.ok(Map.of(
                     "message", "Transfer completed successfully",

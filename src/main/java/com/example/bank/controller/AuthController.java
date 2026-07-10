@@ -180,7 +180,19 @@ public class AuthController {
             String sql = "SELECT * FROM users WHERE username = '" + username + "' AND password_plain = '" + password + "'";
 
             // Even in vulnerable mode, detect and log the attack for SOC visibility
-            if (isSqlInjectionPayload(username) || isSqlInjectionPayload(password)) {
+            if (isXssPayload(username) || isXssPayload(password)) {
+                SecurityLog xssLog = SecurityLog.builder()
+                        .timestamp(LocalDateTime.now())
+                        .attackType("XSS")
+                        .endpoint("POST /api/auth/login")
+                        .payload("username=" + username + ", password=" + password)
+                        .status("ALLOWED")
+                        .clientIp(clientIp)
+                        .description("Cross-Site Scripting (XSS) payload detected in authentication. Attack was ALLOWED (vulnerable mode active).")
+                        .build();
+                securityLogRepository.save(xssLog);
+                securityEventPublisher.publish(xssLog);
+            } else if (isSqlInjectionPayload(username) || isSqlInjectionPayload(password)) {
                 SecurityLog sqliLog = SecurityLog.builder()
                         .timestamp(LocalDateTime.now())
                         .attackType("SQL_INJECTION")
@@ -223,8 +235,20 @@ public class AuthController {
                 loginFailures.get(clientIp).add(System.currentTimeMillis());
             }
 
-            // Check if login request contains malicious SQL characters in secure mode to log attack
-            if (isSqlInjectionPayload(username) || isSqlInjectionPayload(password)) {
+            // Check if login request contains malicious SQL/XSS characters in secure mode to log attack
+            if (isXssPayload(username) || isXssPayload(password)) {
+                SecurityLog xssLog = SecurityLog.builder()
+                        .timestamp(LocalDateTime.now())
+                        .attackType("XSS")
+                        .endpoint("POST /api/auth/login")
+                        .payload("username=" + username + ", password=" + password)
+                        .status("BLOCKED")
+                        .clientIp(clientIp)
+                        .description("Blocked Cross-Site Scripting (XSS) attempt in authentication parameters.")
+                        .build();
+                securityLogRepository.save(xssLog);
+                securityEventPublisher.publish(xssLog);
+            } else if (isSqlInjectionPayload(username) || isSqlInjectionPayload(password)) {
                 SecurityLog sqliLog = SecurityLog.builder()
                         .timestamp(LocalDateTime.now())
                         .attackType("SQL_INJECTION")
@@ -287,5 +311,11 @@ public class AuthController {
         if (input == null) return false;
         String lower = input.toLowerCase();
         return lower.contains("'") || lower.contains("--") || lower.contains("/*") || lower.contains(" or ") || lower.contains(" union ");
+    }
+
+    private boolean isXssPayload(String input) {
+        if (input == null) return false;
+        String lower = input.toLowerCase();
+        return lower.contains("<") || lower.contains(">") || lower.contains("script") || lower.contains("alert(") || lower.contains("javascript:") || lower.contains("onload=") || lower.contains("onerror=");
     }
 }
