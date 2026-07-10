@@ -67,9 +67,10 @@ public class SecurityEventPublisher {
                 if (ex != null) {
                     log.error("[Kafka] Failed to publish security event: {}", ex.getMessage());
                 } else {
-                    log.info("[Kafka] Published security event [{}] type={} to partition={} offset={}",
+                    log.info("[Kafka] Published security event [{}] type={} clientIp={} to partition={} offset={}",
                             event.getEventId(),
                             event.getAttackType(),
+                            event.getClientIp(),
                             result.getRecordMetadata().partition(),
                             result.getRecordMetadata().offset());
                 }
