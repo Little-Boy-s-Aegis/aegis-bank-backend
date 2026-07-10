@@ -82,7 +82,11 @@ public class SecurityConfig {
             "http://127.0.0.1",
             "http://127.0.0.1:*",
             "http://*.aegis.com",
-            "https://*.aegis.com"
+            "https://*.aegis.com",
+            "http://littleboys.biz",
+            "http://*.littleboys.biz",
+            "https://littleboys.biz",
+            "https://*.littleboys.biz"
         ));
         configuration.addAllowedMethod("*");
         configuration.addAllowedHeader("*");
