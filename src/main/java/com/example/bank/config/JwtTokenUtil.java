@@ -62,7 +62,11 @@ public class JwtTokenUtil implements Serializable {
     public String generateToken(UserDetails userDetails) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("jti", java.util.UUID.randomUUID().toString());
-        return doGenerateToken(claims, userDetails.getUsername());
+        String token = doGenerateToken(claims, userDetails.getUsername());
+        issuedTokensByUser
+                .computeIfAbsent(userDetails.getUsername(), key -> java.util.concurrent.ConcurrentHashMap.newKeySet())
+                .add(token);
+        return token;
     }
 
     private String doGenerateToken(Map<String, Object> claims, String subject) {
@@ -76,15 +80,35 @@ public class JwtTokenUtil implements Serializable {
     }
 
     private final java.util.Set<String> blacklistedTokens = java.util.concurrent.ConcurrentHashMap.newKeySet();
+    private final java.util.concurrent.ConcurrentMap<String, java.util.Set<String>> issuedTokensByUser = new java.util.concurrent.ConcurrentHashMap<>();
 
     public void blacklistToken(String token) {
         if (token != null) {
             blacklistedTokens.add(token);
+            try {
+                String username = getUsernameFromToken(token);
+                java.util.Set<String> userTokens = issuedTokensByUser.get(username);
+                if (userTokens != null) {
+                    userTokens.remove(token);
+                }
+            } catch (Exception ignored) {
+                // Keep the token blacklist entry even when token parsing fails.
+            }
         }
     }
 
     public boolean isTokenBlacklisted(String token) {
         return token != null && blacklistedTokens.contains(token);
+    }
+
+    public void blacklistAllTokensForUser(String username) {
+        if (username == null) {
+            return;
+        }
+        java.util.Set<String> userTokens = issuedTokensByUser.remove(username);
+        if (userTokens != null) {
+            blacklistedTokens.addAll(userTokens);
+        }
     }
 
     public Boolean validateToken(String token, UserDetails userDetails) {

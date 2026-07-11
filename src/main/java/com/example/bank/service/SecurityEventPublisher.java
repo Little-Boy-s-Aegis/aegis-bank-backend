@@ -53,6 +53,12 @@ public class SecurityEventPublisher {
      * @param securityLog the persisted security log entry to publish
      */
     public void publish(SecurityLog securityLog) {
+        log.info("[SecurityLog] Processing security event: type={} clientIp={} endpoint={} status={}",
+                securityLog.getAttackType(),
+                securityLog.getClientIp(),
+                securityLog.getEndpoint(),
+                securityLog.getStatus());
+
         if (kafkaTemplate == null) {
             log.debug("[Kafka] Skipping publish (KafkaTemplate not available): type={}", securityLog.getAttackType());
             return;
@@ -67,9 +73,10 @@ public class SecurityEventPublisher {
                 if (ex != null) {
                     log.error("[Kafka] Failed to publish security event: {}", ex.getMessage());
                 } else {
-                    log.info("[Kafka] Published security event [{}] type={} to partition={} offset={}",
+                    log.info("[Kafka] Published security event [{}] type={} clientIp={} to partition={} offset={}",
                             event.getEventId(),
                             event.getAttackType(),
+                            event.getClientIp(),
                             result.getRecordMetadata().partition(),
                             result.getRecordMetadata().offset());
                 }

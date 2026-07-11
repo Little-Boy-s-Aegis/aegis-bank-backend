@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
@@ -21,6 +22,9 @@ public class IpBlockFilter extends OncePerRequestFilter {
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
+
+    @Autowired
+    private JwtTokenUtil jwtTokenUtil;
 
     @jakarta.annotation.PostConstruct
     public void init() {
@@ -77,14 +81,109 @@ public class IpBlockFilter extends OncePerRequestFilter {
 
         if (isBanned) {
             logger.warn("Blocking request from banned IP: " + matchedIp + " (rule: " + matchedRule + ")");
-            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-            response.setContentType("application/json");
-            response.setHeader("Cache-Control", "no-store");
-            response.getWriter().write("{\"error\":\"Forbidden: Your IP is banned by the security team.\"}");
+            revokeRequestAuth(request, response);
+            writeBannedResponse(response, matchedIp, matchedRule);
             return;
         }
 
         chain.doFilter(request, response);
+    }
+
+    private void revokeRequestAuth(HttpServletRequest request, HttpServletResponse response) {
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            String token = authHeader.substring(7);
+            jwtTokenUtil.blacklistToken(token);
+            try {
+                jwtTokenUtil.blacklistAllTokensForUser(jwtTokenUtil.getUsernameFromToken(token));
+            } catch (Exception ignored) {
+                // The presented token is still blacklisted even when claims cannot be parsed.
+            }
+        }
+        SecurityContextHolder.clearContext();
+        expireCookie(response, "token");
+        expireCookie(response, "user");
+        expireCookie(response, "session_token");
+    }
+
+    private void expireCookie(HttpServletResponse response, String name) {
+        response.addHeader("Set-Cookie", name + "=; Path=/; Max-Age=0; SameSite=Strict; Secure");
+    }
+
+    private void writeBannedResponse(HttpServletResponse response, String matchedIp, String matchedRule) throws IOException {
+        response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+        response.setContentType("text/html;charset=UTF-8");
+        response.setHeader("Cache-Control", "no-store, no-cache, max-age=0, must-revalidate");
+        response.setHeader("Pragma", "no-cache");
+        response.setHeader("X-Aegis-IP-Banned", "true");
+        response.setHeader("Clear-Site-Data", "\"cache\", \"cookies\", \"storage\"");
+        response.getWriter().write("""
+            <!doctype html>
+            <html lang="en">
+            <head>
+              <meta charset="utf-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1">
+              <title>Access Revoked | Aegis Bank</title>
+              <style>
+                :root { color-scheme: dark; font-family: Inter, Arial, sans-serif; }
+                body { margin: 0; min-height: 100vh; display: grid; place-items: center; background: #080b12; color: #f8fafc; }
+                main { width: min(560px, calc(100vw - 32px)); border: 1px solid rgba(244, 63, 94, .35); background: #111827; padding: 32px; box-shadow: 0 24px 80px rgba(0,0,0,.35); }
+                h1 { margin: 0 0 12px; font-size: 28px; }
+                p { margin: 8px 0; color: #cbd5e1; line-height: 1.55; }
+                code { display: inline-block; margin-top: 14px; padding: 8px 10px; background: rgba(244, 63, 94, .12); color: #fecdd3; }
+              </style>
+            </head>
+            <body>
+              <main>
+                <h1>Access revoked</h1>
+                <p>Your IP address has been blocked by the Aegis security policy.</p>
+                <p>All browser-side authentication state for this origin has been cleared and any presented token has been revoked.</p>
+                <code>403 IP_BANNED</code>
+              </main>
+            </body>
+            </html>
+            """);
+    }
+
+    private boolean isValidIpLiteral(String ipStr) {
+        if (ipStr == null || ipStr.isBlank()) {
+            return false;
+        }
+        String cleaned = ipStr.trim();
+        // Regex for IPv4 literal
+        if (cleaned.matches("^\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}$")) {
+            String[] parts = cleaned.split("\\.");
+            for (String part : parts) {
+                try {
+                    int val = Integer.parseInt(part);
+                    if (val < 0 || val > 255) return false;
+                } catch (NumberFormatException e) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        // Basic check for IPv6 literal (contains colons, only valid hex/colon characters)
+        if (cleaned.contains(":")) {
+            return cleaned.matches("^[0-9a-fA-F:]+$") && !cleaned.contains(":::");
+        }
+        return false;
+    }
+
+    private boolean isPrivateOrLoopback(String ipStr) {
+        if (ipStr == null || ipStr.isBlank()) {
+            return false;
+        }
+        String cleaned = ipStr.trim();
+        if (!isValidIpLiteral(cleaned)) {
+            return false;
+        }
+        try {
+            InetAddress addr = InetAddress.getByName(cleaned);
+            return addr.isLoopbackAddress() || addr.isSiteLocalAddress() || addr.isAnyLocalAddress();
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     private List<String> getClientIpCandidates(HttpServletRequest request) {
@@ -100,7 +199,14 @@ public class IpBlockFilter extends OncePerRequestFilter {
         }
 
         addIpCandidate(ips, request.getRemoteAddr());
-        return new ArrayList<>(ips);
+        
+        List<String> candidates = new ArrayList<>();
+        for (String ip : ips) {
+            if (!isPrivateOrLoopback(ip)) {
+                candidates.add(ip);
+            }
+        }
+        return candidates;
     }
 
     private void addIpCandidate(Set<String> ips, String value) {
@@ -118,10 +224,24 @@ public class IpBlockFilter extends OncePerRequestFilter {
         if (candidate.isEmpty() || "unknown".equalsIgnoreCase(candidate)) {
             return null;
         }
+        
+        // Handle bracketed IPv6
         if (candidate.startsWith("[") && candidate.contains("]")) {
             candidate = candidate.substring(1, candidate.indexOf("]"));
-        } else if (candidate.indexOf(':') == candidate.lastIndexOf(':') && candidate.contains(":")) {
-            candidate = candidate.substring(0, candidate.indexOf(':'));
+        } else {
+            // Strip port number if present (IP:port)
+            int colonIdx = candidate.indexOf(':');
+            if (colonIdx >= 0) {
+                // If it's IPv4 with a port (e.g. 192.168.1.1:8080), it has exactly one colon
+                if (candidate.indexOf('.') > 0 && colonIdx == candidate.lastIndexOf(':')) {
+                    candidate = candidate.substring(0, colonIdx);
+                }
+            }
+        }
+
+        candidate = candidate.trim();
+        if (!isValidIpLiteral(candidate)) {
+            return null;
         }
 
         try {
@@ -164,7 +284,12 @@ public class IpBlockFilter extends OncePerRequestFilter {
                 return false;
             }
 
-            InetAddress network = InetAddress.getByName(parts[0].trim());
+            String networkIp = parts[0].trim();
+            if (!isValidIpLiteral(networkIp) || !isValidIpLiteral(rawClientIp.trim())) {
+                return false;
+            }
+
+            InetAddress network = InetAddress.getByName(networkIp);
             InetAddress client = InetAddress.getByName(rawClientIp.trim());
             byte[] networkBytes = network.getAddress();
             byte[] clientBytes = client.getAddress();

@@ -135,4 +135,33 @@ public class SecurityControlControllerTest {
         mockMvc.perform(post("/api/admin/security/logs/clear"))
                 .andExpect(status().isUnauthorized());
     }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    public void testClearBannedIpsAdmin() throws Exception {
+        mockMvc.perform(post("/api/admin/security/banned-ips/clear"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("All banned IPs cleared"));
+    }
+
+    @Test
+    public void testClearBannedIpsToken() throws Exception {
+        mockMvc.perform(post("/api/admin/security/banned-ips/clear")
+                        .header("X-Aegis-Token", syncToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("All banned IPs cleared"));
+    }
+
+    @Test
+    @WithMockUser(roles = "USER")
+    public void testClearBannedIpsForbiddenForNormalUser() throws Exception {
+        mockMvc.perform(post("/api/admin/security/banned-ips/clear"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    public void testClearBannedIpsRequiresAuthentication() throws Exception {
+        mockMvc.perform(post("/api/admin/security/banned-ips/clear"))
+                .andExpect(status().isUnauthorized());
+    }
 }

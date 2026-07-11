@@ -158,6 +158,18 @@ public class SecurityControlController {
             return ResponseEntity.badRequest().body(Map.of("error", "ipAddress must be a valid IP or CIDR range"));
         }
 
+        // Extract IP part from CIDR expression for private check
+        String ipPart = ipAddress;
+        if (ipPart.contains("/")) {
+            ipPart = ipPart.split("/", 2)[0].trim();
+        }
+        try {
+            InetAddress inet = InetAddress.getByName(ipPart);
+            if (inet.isLoopbackAddress() || inet.isSiteLocalAddress() || inet.isAnyLocalAddress()) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Cannot ban private or loopback IP range: " + ipAddress));
+            }
+        } catch (Exception ignored) {}
+
         if (status == null || status.isBlank()) {
             status = "active";
         }
@@ -171,15 +183,19 @@ public class SecurityControlController {
             reason = status.equals("active") ? "Synchronized IP block" : "Synchronized IP unblock";
         }
 
-        int updated = jdbcTemplate.update(
-                "UPDATE banned_ips SET banned_at = ?, banned_by = ?, status = ?, reason = ? WHERE ip_address = ?",
-                LocalDateTime.now(), bannedBy, status, reason, ipAddress
-        );
-        if (updated == 0) {
-            jdbcTemplate.update(
-                    "INSERT INTO banned_ips (ip_address, banned_at, banned_by, status, reason) VALUES (?, ?, ?, ?, ?)",
-                    ipAddress, LocalDateTime.now(), bannedBy, status, reason
+        if ("unbanned".equals(status)) {
+            jdbcTemplate.update("DELETE FROM banned_ips WHERE ip_address = ?", ipAddress);
+        } else {
+            int updated = jdbcTemplate.update(
+                    "UPDATE banned_ips SET banned_at = ?, banned_by = ?, status = ?, reason = ? WHERE ip_address = ?",
+                    LocalDateTime.now(), bannedBy, status, reason, ipAddress
             );
+            if (updated == 0) {
+                jdbcTemplate.update(
+                        "INSERT INTO banned_ips (ip_address, banned_at, banned_by, status, reason) VALUES (?, ?, ?, ?, ?)",
+                        ipAddress, LocalDateTime.now(), bannedBy, status, reason
+                );
+            }
         }
 
         return ResponseEntity.ok(Map.of(
@@ -198,6 +214,17 @@ public class SecurityControlController {
         }
         securityLogRepository.deleteAll();
         return ResponseEntity.ok(Map.of("message", "Security logs cleared"));
+    }
+
+    @PostMapping("/banned-ips/clear")
+    public ResponseEntity<?> clearBannedIps(@RequestHeader(value = "X-Aegis-Token", required = false) String token) {
+        org.springframework.security.core.Authentication auth = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+        ResponseEntity<?> authCheck = syncOrAdminRequired(token, auth);
+        if (authCheck != null) {
+            return authCheck;
+        }
+        jdbcTemplate.update("DELETE FROM banned_ips");
+        return ResponseEntity.ok(Map.of("message", "All banned IPs cleared"));
     }
 
     private String stringField(Map<String, Object> payload, String key) {
