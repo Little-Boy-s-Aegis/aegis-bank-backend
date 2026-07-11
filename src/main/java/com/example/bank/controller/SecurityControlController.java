@@ -216,6 +216,17 @@ public class SecurityControlController {
         return ResponseEntity.ok(Map.of("message", "Security logs cleared"));
     }
 
+    @PostMapping("/banned-ips/clear")
+    public ResponseEntity<?> clearBannedIps(@RequestHeader(value = "X-Aegis-Token", required = false) String token) {
+        org.springframework.security.core.Authentication auth = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+        ResponseEntity<?> authCheck = syncOrAdminRequired(token, auth);
+        if (authCheck != null) {
+            return authCheck;
+        }
+        jdbcTemplate.update("DELETE FROM banned_ips");
+        return ResponseEntity.ok(Map.of("message", "All banned IPs cleared"));
+    }
+
     private String stringField(Map<String, Object> payload, String key) {
         Object value = payload.get(key);
         return value == null ? null : value.toString().trim();

@@ -145,9 +145,41 @@ public class IpBlockFilter extends OncePerRequestFilter {
             """);
     }
 
+    private boolean isValidIpLiteral(String ipStr) {
+        if (ipStr == null || ipStr.isBlank()) {
+            return false;
+        }
+        String cleaned = ipStr.trim();
+        // Regex for IPv4 literal
+        if (cleaned.matches("^\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}$")) {
+            String[] parts = cleaned.split("\\.");
+            for (String part : parts) {
+                try {
+                    int val = Integer.parseInt(part);
+                    if (val < 0 || val > 255) return false;
+                } catch (NumberFormatException e) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        // Basic check for IPv6 literal (contains colons, only valid hex/colon characters)
+        if (cleaned.contains(":")) {
+            return cleaned.matches("^[0-9a-fA-F:]+$") && !cleaned.contains(":::");
+        }
+        return false;
+    }
+
     private boolean isPrivateOrLoopback(String ipStr) {
+        if (ipStr == null || ipStr.isBlank()) {
+            return false;
+        }
+        String cleaned = ipStr.trim();
+        if (!isValidIpLiteral(cleaned)) {
+            return false;
+        }
         try {
-            InetAddress addr = InetAddress.getByName(ipStr.trim());
+            InetAddress addr = InetAddress.getByName(cleaned);
             return addr.isLoopbackAddress() || addr.isSiteLocalAddress() || addr.isAnyLocalAddress();
         } catch (Exception e) {
             return false;
@@ -192,10 +224,24 @@ public class IpBlockFilter extends OncePerRequestFilter {
         if (candidate.isEmpty() || "unknown".equalsIgnoreCase(candidate)) {
             return null;
         }
+        
+        // Handle bracketed IPv6
         if (candidate.startsWith("[") && candidate.contains("]")) {
             candidate = candidate.substring(1, candidate.indexOf("]"));
-        } else if (candidate.indexOf(':') == candidate.lastIndexOf(':') && candidate.contains(":")) {
-            candidate = candidate.substring(0, candidate.indexOf(':'));
+        } else {
+            // Strip port number if present (IP:port)
+            int colonIdx = candidate.indexOf(':');
+            if (colonIdx >= 0) {
+                // If it's IPv4 with a port (e.g. 192.168.1.1:8080), it has exactly one colon
+                if (candidate.indexOf('.') > 0 && colonIdx == candidate.lastIndexOf(':')) {
+                    candidate = candidate.substring(0, colonIdx);
+                }
+            }
+        }
+
+        candidate = candidate.trim();
+        if (!isValidIpLiteral(candidate)) {
+            return null;
         }
 
         try {
@@ -238,7 +284,12 @@ public class IpBlockFilter extends OncePerRequestFilter {
                 return false;
             }
 
-            InetAddress network = InetAddress.getByName(parts[0].trim());
+            String networkIp = parts[0].trim();
+            if (!isValidIpLiteral(networkIp) || !isValidIpLiteral(rawClientIp.trim())) {
+                return false;
+            }
+
+            InetAddress network = InetAddress.getByName(networkIp);
             InetAddress client = InetAddress.getByName(rawClientIp.trim());
             byte[] networkBytes = network.getAddress();
             byte[] clientBytes = client.getAddress();
