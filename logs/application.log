@@ -1,0 +1,278 @@
+2026-07-11T00:34:23.556+07:00  INFO 1 --- [kground-preinit] o.h.validator.internal.util.Version      : HV000001: Hibernate Validator 8.0.3.Final
+2026-07-11T00:34:23.616+07:00  INFO 1 --- [           main] c.e.bank.controller.AuthControllerTest   : Starting AuthControllerTest using Java 25 with PID 47812 (started by lenovo in D:\hackathon\BE)
+2026-07-11T00:34:23.617+07:00  INFO 1 --- [           main] c.e.bank.controller.AuthControllerTest   : No active profile set, falling back to 1 default profile: "default"
+2026-07-11T00:34:24.601+07:00  INFO 1 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-07-11T00:34:24.706+07:00  INFO 1 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 86 ms. Found 4 JPA repository interfaces.
+2026-07-11T00:34:25.325+07:00  INFO 1 --- [           main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-07-11T00:34:25.407+07:00  INFO 1 --- [           main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.6.33.Final
+2026-07-11T00:34:25.455+07:00  INFO 1 --- [           main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2026-07-11T00:34:25.837+07:00  INFO 1 --- [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-07-11T00:34:25.869+07:00  INFO 1 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-07-11T00:34:26.060+07:00  INFO 1 --- [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection conn0: url=jdbc:h2:mem:testdb user=SA
+2026-07-11T00:34:26.062+07:00  INFO 1 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-07-11T00:34:26.096+07:00  WARN 1 --- [           main] org.hibernate.orm.deprecation            : HHH90000025: H2Dialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2026-07-11T00:34:26.118+07:00  INFO 1 --- [           main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-1)']
+	Database driver: undefined/unknown
+	Database version: 2.3.232
+	Autocommit mode: undefined/unknown
+	Isolation level: undefined/unknown
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-07-11T00:34:26.955+07:00  INFO 1 --- [           main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-07-11T00:34:27.025+07:00  INFO 1 --- [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-07-11T00:34:27.345+07:00  INFO 1 --- [           main] o.s.d.j.r.query.QueryEnhancerFactory     : Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-07-11T00:34:27.925+07:00  WARN 1 --- [           main] c.e.bank.service.SecurityEventPublisher  : [Kafka] KafkaTemplate not available. Security events will NOT be published to Kafka.
+2026-07-11T00:34:28.011+07:00  WARN 1 --- [           main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-07-11T00:34:28.216+07:00  INFO 1 --- [           main] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with UserDetailsService bean with name userDetailsService
+2026-07-11T00:34:28.654+07:00  INFO 1 --- [           main] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
+2026-07-11T00:34:28.655+07:00  INFO 1 --- [           main] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-07-11T00:34:28.656+07:00  INFO 1 --- [           main] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 1 ms
+2026-07-11T00:34:28.684+07:00  INFO 1 --- [           main] c.e.bank.controller.AuthControllerTest   : Started AuthControllerTest in 5.523 seconds (process running for 6.789)
+2026-07-11T00:34:30.205+07:00  INFO 1 --- [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.example.bank.controller.SecurityControlControllerTest]: SecurityControlControllerTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-07-11T00:34:30.210+07:00  INFO 1 --- [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.example.bank.BankDemoApplication for test class com.example.bank.controller.SecurityControlControllerTest
+2026-07-11T00:34:30.303+07:00  WARN 1 --- [           main] com.example.bank.config.IpBlockFilter    : Blocking request from banned IP: 198.51.100.77 (rule: 198.51.100.77)
+2026-07-11T00:34:30.371+07:00  INFO 1 --- [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.example.bank.controller.TransactionControllerTest]: TransactionControllerTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-07-11T00:34:30.374+07:00  INFO 1 --- [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.example.bank.BankDemoApplication for test class com.example.bank.controller.TransactionControllerTest
+2026-07-11T00:34:30.691+07:00  INFO 1 --- [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.example.bank.security.SecurityPenTest]: SecurityPenTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-07-11T00:34:30.700+07:00  INFO 1 --- [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.example.bank.BankDemoApplication for test class com.example.bank.security.SecurityPenTest
+2026-07-11T00:34:32.340+07:00  WARN 1 --- [           main] c.example.bank.config.JwtRequestFilter   : JWT t*ken has expired or is invalid
+2026-07-11T00:34:32.349+07:00  WARN 1 --- [           main] c.example.bank.config.JwtRequestFilter   : JWT t*ken has expired or is invalid
+2026-07-11T00:34:32.352+07:00  WARN 1 --- [           main] c.example.bank.config.JwtRequestFilter   : JWT t*ken has expired or is invalid
+2026-07-11T00:34:32.355+07:00  WARN 1 --- [           main] c.example.bank.config.JwtRequestFilter   : JWT t*ken has expired or is invalid
+2026-07-11T00:34:32.357+07:00  WARN 1 --- [           main] c.example.bank.config.JwtRequestFilter   : JWT t*ken has expired or is invalid
+2026-07-11T00:34:32.360+07:00  WARN 1 --- [           main] c.example.bank.config.JwtRequestFilter   : Unable to get JWT t*ken
+2026-07-11T00:34:32.363+07:00  WARN 1 --- [           main] c.example.bank.config.JwtRequestFilter   : JWT t*ken has expired or is invalid
+2026-07-11T00:34:32.365+07:00  WARN 1 --- [           main] c.example.bank.config.JwtRequestFilter   : JWT t*ken has expired or is invalid
+2026-07-11T00:34:32.374+07:00  WARN 1 --- [           main] c.example.bank.config.JwtRequestFilter   : JWT t*ken has expired or is invalid
+2026-07-11T00:34:32.381+07:00  WARN 1 --- [           main] c.example.bank.config.JwtRequestFilter   : JWT t*ken has expired or is invalid
+2026-07-11T00:34:32.459+07:00  WARN 1 --- [           main] c.example.bank.config.JwtRequestFilter   : JWT t*ken has expired or is invalid
+2026-07-11T00:34:34.654+07:00  INFO 1 --- [ionShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-07-11T00:34:34.658+07:00  INFO 1 --- [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
+2026-07-11T00:34:34.660+07:00  INFO 1 --- [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.
+2026-07-11T00:53:55.123+07:00  INFO 1 --- [kground-preinit] o.h.validator.internal.util.Version      : HV000001: Hibernate Validator 8.0.3.Final
+2026-07-11T00:53:55.181+07:00  INFO 1 --- [           main] c.e.bank.controller.AuthControllerTest   : Starting AuthControllerTest using Java 25 with PID 6624 (started by lenovo in D:\hackathon\BE)
+2026-07-11T00:53:55.182+07:00  INFO 1 --- [           main] c.e.bank.controller.AuthControllerTest   : No active profile set, falling back to 1 default profile: "default"
+2026-07-11T00:53:56.028+07:00  INFO 1 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-07-11T00:53:56.122+07:00  INFO 1 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 77 ms. Found 4 JPA repository interfaces.
+2026-07-11T00:53:56.948+07:00  INFO 1 --- [           main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-07-11T00:53:57.055+07:00  INFO 1 --- [           main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.6.33.Final
+2026-07-11T00:53:57.109+07:00  INFO 1 --- [           main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2026-07-11T00:53:57.563+07:00  INFO 1 --- [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-07-11T00:53:57.610+07:00  INFO 1 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-07-11T00:53:57.854+07:00  INFO 1 --- [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection conn0: url=jdbc:h2:mem:testdb user=SA
+2026-07-11T00:53:57.856+07:00  INFO 1 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-07-11T00:53:57.889+07:00  WARN 1 --- [           main] org.hibernate.orm.deprecation            : HHH90000025: H2Dialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2026-07-11T00:53:57.927+07:00  INFO 1 --- [           main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-1)']
+	Database driver: undefined/unknown
+	Database version: 2.3.232
+	Autocommit mode: undefined/unknown
+	Isolation level: undefined/unknown
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-07-11T00:53:58.869+07:00  INFO 1 --- [           main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-07-11T00:53:58.941+07:00  INFO 1 --- [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-07-11T00:53:59.311+07:00  INFO 1 --- [           main] o.s.d.j.r.query.QueryEnhancerFactory     : Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-07-11T00:54:00.034+07:00  WARN 1 --- [           main] c.e.bank.service.SecurityEventPublisher  : [Kafka] KafkaTemplate not available. Security events will NOT be published to Kafka.
+2026-07-11T00:54:00.128+07:00  WARN 1 --- [           main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-07-11T00:54:00.389+07:00  INFO 1 --- [           main] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with UserDetailsService bean with name userDetailsService
+2026-07-11T00:54:00.896+07:00  INFO 1 --- [           main] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
+2026-07-11T00:54:00.896+07:00  INFO 1 --- [           main] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-07-11T00:54:00.897+07:00  INFO 1 --- [           main] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 0 ms
+2026-07-11T00:54:00.922+07:00  INFO 1 --- [           main] c.e.bank.controller.AuthControllerTest   : Started AuthControllerTest in 6.238 seconds (process running for 7.497)
+2026-07-11T00:54:02.671+07:00  INFO 1 --- [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.example.bank.controller.SecurityControlControllerTest]: SecurityControlControllerTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-07-11T00:54:02.674+07:00  INFO 1 --- [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.example.bank.BankDemoApplication for test class com.example.bank.controller.SecurityControlControllerTest
+2026-07-11T00:54:02.755+07:00  WARN 1 --- [           main] com.example.bank.config.IpBlockFilter    : Blocking request from banned IP: 198.51.100.77 (rule: 198.51.100.77)
+2026-07-11T00:54:02.834+07:00  INFO 1 --- [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.example.bank.controller.TransactionControllerTest]: TransactionControllerTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-07-11T00:54:02.841+07:00  INFO 1 --- [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.example.bank.BankDemoApplication for test class com.example.bank.controller.TransactionControllerTest
+2026-07-11T00:54:03.195+07:00  INFO 1 --- [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.example.bank.security.SecurityPenTest]: SecurityPenTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-07-11T00:54:03.205+07:00  INFO 1 --- [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.example.bank.BankDemoApplication for test class com.example.bank.security.SecurityPenTest
+2026-07-11T00:54:04.796+07:00  WARN 1 --- [           main] c.example.bank.config.JwtRequestFilter   : JWT t*ken has expired or is invalid
+2026-07-11T00:54:04.802+07:00  WARN 1 --- [           main] c.example.bank.config.JwtRequestFilter   : JWT t*ken has expired or is invalid
+2026-07-11T00:54:04.804+07:00  WARN 1 --- [           main] c.example.bank.config.JwtRequestFilter   : JWT t*ken has expired or is invalid
+2026-07-11T00:54:04.806+07:00  WARN 1 --- [           main] c.example.bank.config.JwtRequestFilter   : JWT t*ken has expired or is invalid
+2026-07-11T00:54:04.808+07:00  WARN 1 --- [           main] c.example.bank.config.JwtRequestFilter   : JWT t*ken has expired or is invalid
+2026-07-11T00:54:04.811+07:00  WARN 1 --- [           main] c.example.bank.config.JwtRequestFilter   : Unable to get JWT t*ken
+2026-07-11T00:54:04.814+07:00  WARN 1 --- [           main] c.example.bank.config.JwtRequestFilter   : JWT t*ken has expired or is invalid
+2026-07-11T00:54:04.817+07:00  WARN 1 --- [           main] c.example.bank.config.JwtRequestFilter   : JWT t*ken has expired or is invalid
+2026-07-11T00:54:04.824+07:00  WARN 1 --- [           main] c.example.bank.config.JwtRequestFilter   : JWT t*ken has expired or is invalid
+2026-07-11T00:54:04.830+07:00  WARN 1 --- [           main] c.example.bank.config.JwtRequestFilter   : JWT t*ken has expired or is invalid
+2026-07-11T00:54:04.906+07:00  WARN 1 --- [           main] c.example.bank.config.JwtRequestFilter   : JWT t*ken has expired or is invalid
+2026-07-11T00:54:07.104+07:00  INFO 1 --- [ionShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-07-11T00:54:07.108+07:00  INFO 1 --- [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
+2026-07-11T00:54:07.110+07:00  INFO 1 --- [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.
+2026-07-11T01:00:16.218+07:00  INFO 1 --- [kground-preinit] o.h.validator.internal.util.Version      : HV000001: Hibernate Validator 8.0.3.Final
+2026-07-11T01:00:16.264+07:00  INFO 1 --- [           main] c.e.bank.controller.AuthControllerTest   : Starting AuthControllerTest using Java 25 with PID 38872 (started by lenovo in D:\hackathon\BE)
+2026-07-11T01:00:16.266+07:00  INFO 1 --- [           main] c.e.bank.controller.AuthControllerTest   : No active profile set, falling back to 1 default profile: "default"
+2026-07-11T01:00:16.979+07:00  INFO 1 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-07-11T01:00:17.062+07:00  INFO 1 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 62 ms. Found 4 JPA repository interfaces.
+2026-07-11T01:00:17.643+07:00  INFO 1 --- [           main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-07-11T01:00:17.745+07:00  INFO 1 --- [           main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.6.33.Final
+2026-07-11T01:00:17.800+07:00  INFO 1 --- [           main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2026-07-11T01:00:18.153+07:00  INFO 1 --- [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-07-11T01:00:18.179+07:00  INFO 1 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-07-11T01:00:18.350+07:00  INFO 1 --- [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection conn0: url=jdbc:h2:mem:testdb user=SA
+2026-07-11T01:00:18.351+07:00  INFO 1 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-07-11T01:00:18.383+07:00  WARN 1 --- [           main] org.hibernate.orm.deprecation            : HHH90000025: H2Dialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2026-07-11T01:00:18.409+07:00  INFO 1 --- [           main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-1)']
+	Database driver: undefined/unknown
+	Database version: 2.3.232
+	Autocommit mode: undefined/unknown
+	Isolation level: undefined/unknown
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-07-11T01:00:19.274+07:00  INFO 1 --- [           main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-07-11T01:00:19.354+07:00  INFO 1 --- [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-07-11T01:00:19.791+07:00  INFO 1 --- [           main] o.s.d.j.r.query.QueryEnhancerFactory     : Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-07-11T01:00:20.429+07:00  WARN 1 --- [           main] c.e.bank.service.SecurityEventPublisher  : [Kafka] KafkaTemplate not available. Security events will NOT be published to Kafka.
+2026-07-11T01:00:20.564+07:00  WARN 1 --- [           main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-07-11T01:00:20.922+07:00  INFO 1 --- [           main] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with UserDetailsService bean with name userDetailsService
+2026-07-11T01:00:21.374+07:00  INFO 1 --- [           main] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
+2026-07-11T01:00:21.375+07:00  INFO 1 --- [           main] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-07-11T01:00:21.376+07:00  INFO 1 --- [           main] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 1 ms
+2026-07-11T01:00:21.394+07:00  INFO 1 --- [           main] c.e.bank.controller.AuthControllerTest   : Started AuthControllerTest in 5.528 seconds (process running for 6.796)
+2026-07-11T01:00:23.189+07:00  INFO 1 --- [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.example.bank.controller.SecurityControlControllerTest]: SecurityControlControllerTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-07-11T01:00:23.193+07:00  INFO 1 --- [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.example.bank.BankDemoApplication for test class com.example.bank.controller.SecurityControlControllerTest
+2026-07-11T01:00:23.281+07:00  WARN 1 --- [           main] com.example.bank.config.IpBlockFilter    : Blocking request from banned IP: 198.51.100.77 (rule: 198.51.100.77)
+2026-07-11T01:00:23.343+07:00  INFO 1 --- [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.example.bank.controller.TransactionControllerTest]: TransactionControllerTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-07-11T01:00:23.345+07:00  INFO 1 --- [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.example.bank.BankDemoApplication for test class com.example.bank.controller.TransactionControllerTest
+2026-07-11T01:00:23.501+07:00  INFO 1 --- [           main] c.e.bank.service.SecurityEventPublisher  : [SecurityLog] Processing security event: type=PARAMETER_TAMPERING clientIp=127.0.0.1 endpoint=POST /api/transactions/transfer status=BLOCKED
+2026-07-11T01:00:23.552+07:00  INFO 1 --- [           main] c.e.bank.service.SecurityEventPublisher  : [SecurityLog] Processing security event: type=IDOR/BOLA clientIp=127.0.0.1 endpoint=GET /api/transactions/history?accountNumber=ACC-987654 status=BLOCKED
+2026-07-11T01:00:23.589+07:00  INFO 1 --- [           main] c.e.bank.service.SecurityEventPublisher  : [SecurityLog] Processing security event: type=PARAMETER_TAMPERING clientIp=127.0.0.1 endpoint=POST /api/transactions/transfer status=BLOCKED
+2026-07-11T01:00:23.678+07:00  INFO 1 --- [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.example.bank.security.SecurityPenTest]: SecurityPenTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-07-11T01:00:23.687+07:00  INFO 1 --- [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.example.bank.BankDemoApplication for test class com.example.bank.security.SecurityPenTest
+2026-07-11T01:00:23.703+07:00  INFO 1 --- [           main] c.e.bank.service.SecurityEventPublisher  : [SecurityLog] Processing security event: type=SQL_INJECTION clientIp=127.0.0.1 endpoint=POST /api/auth/login status=BLOCKED
+2026-07-11T01:00:23.711+07:00  INFO 1 --- [           main] c.e.bank.service.SecurityEventPublisher  : [SecurityLog] Processing security event: type=SQL_INJECTION clientIp=127.0.0.1 endpoint=POST /api/auth/login status=BLOCKED
+2026-07-11T01:00:23.722+07:00  INFO 1 --- [           main] c.e.bank.service.SecurityEventPublisher  : [SecurityLog] Processing security event: type=SQL_INJECTION clientIp=127.0.0.1 endpoint=POST /api/auth/login status=BLOCKED
+2026-07-11T01:00:23.731+07:00  INFO 1 --- [           main] c.e.bank.service.SecurityEventPublisher  : [SecurityLog] Processing security event: type=SQL_INJECTION clientIp=127.0.0.1 endpoint=POST /api/auth/login status=BLOCKED
+2026-07-11T01:00:23.816+07:00  INFO 1 --- [           main] c.e.bank.service.SecurityEventPublisher  : [SecurityLog] Processing security event: type=SQL_INJECTION clientIp=127.0.0.1 endpoint=POST /api/auth/login status=BLOCKED
+2026-07-11T01:00:23.902+07:00  INFO 1 --- [           main] c.e.bank.service.SecurityEventPublisher  : [SecurityLog] Processing security event: type=SQL_INJECTION clientIp=127.0.0.1 endpoint=POST /api/auth/login status=BLOCKED
+2026-07-11T01:00:23.974+07:00  INFO 1 --- [           main] c.e.bank.service.SecurityEventPublisher  : [SecurityLog] Processing security event: type=SQL_INJECTION clientIp=127.0.0.1 endpoint=POST /api/auth/login status=BLOCKED
+2026-07-11T01:00:24.042+07:00  INFO 1 --- [           main] c.e.bank.service.SecurityEventPublisher  : [SecurityLog] Processing security event: type=SQL_INJECTION clientIp=127.0.0.1 endpoint=POST /api/auth/login status=BLOCKED
+2026-07-11T01:00:24.329+07:00  INFO 1 --- [           main] c.e.bank.service.SecurityEventPublisher  : [SecurityLog] Processing security event: type=SQL_INJECTION clientIp=127.0.0.1 endpoint=GET /api/transactions/history?search=' OR '1'='1 status=BLOCKED
+2026-07-11T01:00:24.343+07:00  INFO 1 --- [           main] c.e.bank.service.SecurityEventPublisher  : [SecurityLog] Processing security event: type=SQL_INJECTION clientIp=127.0.0.1 endpoint=GET /api/transactions/history?search=' UNION SELECT * FROM users -- status=BLOCKED
+2026-07-11T01:00:24.357+07:00  INFO 1 --- [           main] c.e.bank.service.SecurityEventPublisher  : [SecurityLog] Processing security event: type=SQL_INJECTION clientIp=127.0.0.1 endpoint=GET /api/transactions/history?search='; DELETE FROM transactions; -- status=BLOCKED
+2026-07-11T01:00:24.367+07:00  INFO 1 --- [           main] c.e.bank.service.SecurityEventPublisher  : [SecurityLog] Processing security event: type=SQL_INJECTION clientIp=127.0.0.1 endpoint=POST /api/auth/login status=BLOCKED
+2026-07-11T01:00:24.387+07:00  INFO 1 --- [           main] c.e.bank.service.SecurityEventPublisher  : [SecurityLog] Processing security event: type=SQL_INJECTION clientIp=127.0.0.1 endpoint=POST /api/auth/login status=BLOCKED
+2026-07-11T01:00:24.399+07:00  INFO 1 --- [           main] c.e.bank.service.SecurityEventPublisher  : [SecurityLog] Processing security event: type=SQL_INJECTION clientIp=127.0.0.1 endpoint=POST /api/auth/login status=BLOCKED
+2026-07-11T01:00:24.410+07:00  INFO 1 --- [           main] c.e.bank.service.SecurityEventPublisher  : [SecurityLog] Processing security event: type=SQL_INJECTION clientIp=127.0.0.1 endpoint=POST /api/auth/login status=BLOCKED
+2026-07-11T01:00:24.417+07:00  INFO 1 --- [           main] c.e.bank.service.SecurityEventPublisher  : [SecurityLog] Processing security event: type=SQL_INJECTION clientIp=127.0.0.1 endpoint=POST /api/auth/login status=BLOCKED
+2026-07-11T01:00:24.423+07:00  INFO 1 --- [           main] c.e.bank.service.SecurityEventPublisher  : [SecurityLog] Processing security event: type=SQL_INJECTION clientIp=127.0.0.1 endpoint=POST /api/auth/login status=BLOCKED
+2026-07-11T01:00:24.428+07:00  INFO 1 --- [           main] c.e.bank.service.SecurityEventPublisher  : [SecurityLog] Processing security event: type=SQL_INJECTION clientIp=127.0.0.1 endpoint=POST /api/auth/login status=BLOCKED
+2026-07-11T01:00:24.516+07:00  INFO 1 --- [           main] c.e.bank.service.SecurityEventPublisher  : [SecurityLog] Processing security event: type=XSS clientIp=127.0.0.1 endpoint=POST /api/transactions/transfer status=DETECTED_AND_SANITIZED
+2026-07-11T01:00:24.549+07:00  INFO 1 --- [           main] c.e.bank.service.SecurityEventPublisher  : [SecurityLog] Processing security event: type=XSS clientIp=127.0.0.1 endpoint=POST /api/auth/login status=BLOCKED
+2026-07-11T01:00:24.640+07:00  INFO 1 --- [           main] c.e.bank.service.SecurityEventPublisher  : [SecurityLog] Processing security event: type=XSS clientIp=127.0.0.1 endpoint=POST /api/transactions/transfer status=DETECTED_AND_SANITIZED
+2026-07-11T01:00:24.750+07:00  INFO 1 --- [           main] c.e.bank.service.SecurityEventPublisher  : [SecurityLog] Processing security event: type=XSS clientIp=127.0.0.1 endpoint=POST /api/transactions/transfer status=DETECTED_AND_SANITIZED
+2026-07-11T01:00:25.034+07:00  INFO 1 --- [           main] c.e.bank.service.SecurityEventPublisher  : [SecurityLog] Processing security event: type=XSS clientIp=127.0.0.1 endpoint=POST /api/transactions/transfer status=DETECTED_AND_SANITIZED
+2026-07-11T01:00:25.117+07:00  INFO 1 --- [           main] c.e.bank.service.SecurityEventPublisher  : [SecurityLog] Processing security event: type=XSS clientIp=127.0.0.1 endpoint=POST /api/transactions/transfer status=DETECTED_AND_SANITIZED
+2026-07-11T01:00:25.244+07:00  WARN 1 --- [           main] c.example.bank.config.JwtRequestFilter   : JWT t*ken has expired or is invalid
+2026-07-11T01:00:25.248+07:00  WARN 1 --- [           main] c.example.bank.config.JwtRequestFilter   : JWT t*ken has expired or is invalid
+2026-07-11T01:00:25.250+07:00  WARN 1 --- [           main] c.example.bank.config.JwtRequestFilter   : JWT t*ken has expired or is invalid
+2026-07-11T01:00:25.252+07:00  WARN 1 --- [           main] c.example.bank.config.JwtRequestFilter   : JWT t*ken has expired or is invalid
+2026-07-11T01:00:25.254+07:00  WARN 1 --- [           main] c.example.bank.config.JwtRequestFilter   : JWT t*ken has expired or is invalid
+2026-07-11T01:00:25.256+07:00  WARN 1 --- [           main] c.example.bank.config.JwtRequestFilter   : Unable to get JWT t*ken
+2026-07-11T01:00:25.258+07:00  WARN 1 --- [           main] c.example.bank.config.JwtRequestFilter   : JWT t*ken has expired or is invalid
+2026-07-11T01:00:25.259+07:00  WARN 1 --- [           main] c.example.bank.config.JwtRequestFilter   : JWT t*ken has expired or is invalid
+2026-07-11T01:00:25.265+07:00  WARN 1 --- [           main] c.example.bank.config.JwtRequestFilter   : JWT t*ken has expired or is invalid
+2026-07-11T01:00:25.270+07:00  WARN 1 --- [           main] c.example.bank.config.JwtRequestFilter   : JWT t*ken has expired or is invalid
+2026-07-11T01:00:25.347+07:00  WARN 1 --- [           main] c.example.bank.config.JwtRequestFilter   : JWT t*ken has expired or is invalid
+2026-07-11T01:00:25.439+07:00  INFO 1 --- [           main] c.e.bank.service.SecurityEventPublisher  : [SecurityLog] Processing security event: type=IDOR/BOLA clientIp=127.0.0.1 endpoint=GET /api/accounts/ACC-987654/details status=BLOCKED
+2026-07-11T01:00:25.518+07:00  INFO 1 --- [           main] c.e.bank.service.SecurityEventPublisher  : [SecurityLog] Processing security event: type=IDOR/BOLA clientIp=127.0.0.1 endpoint=GET /api/transactions/history?accountNumber=ACC-987654 status=BLOCKED
+2026-07-11T01:00:25.598+07:00  INFO 1 --- [           main] c.e.bank.service.SecurityEventPublisher  : [SecurityLog] Processing security event: type=PARAMETER_TAMPERING clientIp=127.0.0.1 endpoint=POST /api/transactions/transfer status=BLOCKED
+2026-07-11T01:00:25.962+07:00  INFO 1 --- [           main] c.e.bank.service.SecurityEventPublisher  : [SecurityLog] Processing security event: type=BRUTE_FORCE clientIp=127.0.0.1 endpoint=POST /api/auth/login status=BLOCKED
+2026-07-11T01:00:25.964+07:00  INFO 1 --- [           main] c.e.bank.service.SecurityEventPublisher  : [SecurityLog] Processing security event: type=BRUTE_FORCE clientIp=127.0.0.1 endpoint=POST /api/auth/login status=BLOCKED
+2026-07-11T01:00:26.183+07:00  INFO 1 --- [           main] c.e.bank.service.SecurityEventPublisher  : [SecurityLog] Processing security event: type=PARAMETER_TAMPERING clientIp=127.0.0.1 endpoint=POST /api/transactions/transfer status=BLOCKED
+2026-07-11T01:00:26.251+07:00  INFO 1 --- [           main] c.e.bank.service.SecurityEventPublisher  : [SecurityLog] Processing security event: type=PARAMETER_TAMPERING clientIp=127.0.0.1 endpoint=POST /api/transactions/transfer status=BLOCKED
+2026-07-11T01:00:27.361+07:00  INFO 1 --- [           main] c.e.bank.service.SecurityEventPublisher  : [SecurityLog] Processing security event: type=SQL_INJECTION clientIp=127.0.0.1 endpoint=POST /api/auth/login status=BLOCKED
+2026-07-11T01:00:27.400+07:00  INFO 1 --- [ionShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-07-11T01:00:27.402+07:00  INFO 1 --- [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
+2026-07-11T01:00:27.403+07:00  INFO 1 --- [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.
+2026-07-11T19:54:44.213+07:00  INFO 1 --- [kground-preinit] o.h.validator.internal.util.Version      : HV000001: Hibernate Validator 8.0.3.Final
+2026-07-11T19:54:44.245+07:00  INFO 1 --- [           main] c.e.bank.controller.AuthControllerTest   : Starting AuthControllerTest using Java 25 with PID 42844 (started by lenovo in D:\hackathon\BE)
+2026-07-11T19:54:44.246+07:00  INFO 1 --- [           main] c.e.bank.controller.AuthControllerTest   : No active profile set, falling back to 1 default profile: "default"
+2026-07-11T19:54:44.759+07:00  INFO 1 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-07-11T19:54:44.809+07:00  INFO 1 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 42 ms. Found 4 JPA repository interfaces.
+2026-07-11T19:54:45.183+07:00  INFO 1 --- [           main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-07-11T19:54:45.242+07:00  INFO 1 --- [           main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.6.33.Final
+2026-07-11T19:54:45.271+07:00  INFO 1 --- [           main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2026-07-11T19:54:45.510+07:00  INFO 1 --- [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-07-11T19:54:45.533+07:00  INFO 1 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-07-11T19:54:45.669+07:00  INFO 1 --- [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection conn0: url=jdbc:h2:mem:testdb user=SA
+2026-07-11T19:54:45.671+07:00  INFO 1 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-07-11T19:54:45.692+07:00  WARN 1 --- [           main] org.hibernate.orm.deprecation            : HHH90000025: H2Dialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2026-07-11T19:54:45.714+07:00  INFO 1 --- [           main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-1)']
+	Database driver: undefined/unknown
+	Database version: 2.3.232
+	Autocommit mode: undefined/unknown
+	Isolation level: undefined/unknown
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-07-11T19:54:46.386+07:00  INFO 1 --- [           main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-07-11T19:54:46.448+07:00  INFO 1 --- [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-07-11T19:54:46.742+07:00  INFO 1 --- [           main] o.s.d.j.r.query.QueryEnhancerFactory     : Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-07-11T19:54:47.225+07:00  WARN 1 --- [           main] c.e.bank.service.SecurityEventPublisher  : [Kafka] KafkaTemplate not available. Security events will NOT be published to Kafka.
+2026-07-11T19:54:47.296+07:00  WARN 1 --- [           main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-07-11T19:54:47.457+07:00  INFO 1 --- [           main] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with UserDetailsService bean with name userDetailsService
+2026-07-11T19:54:47.725+07:00  INFO 1 --- [           main] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
+2026-07-11T19:54:47.726+07:00  INFO 1 --- [           main] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-07-11T19:54:47.727+07:00  INFO 1 --- [           main] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 1 ms
+2026-07-11T19:54:47.742+07:00  INFO 1 --- [           main] c.e.bank.controller.AuthControllerTest   : Started AuthControllerTest in 3.78 seconds (process running for 4.568)
+2026-07-11T19:54:48.755+07:00  INFO 1 --- [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.example.bank.controller.SecurityControlControllerTest]: SecurityControlControllerTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-07-11T19:54:48.758+07:00  INFO 1 --- [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.example.bank.BankDemoApplication for test class com.example.bank.controller.SecurityControlControllerTest
+2026-07-11T19:54:48.819+07:00  WARN 1 --- [           main] com.example.bank.config.IpBlockFilter    : Blocking request from banned IP: 198.51.100.77 (rule: 198.51.100.77)
+2026-07-11T19:54:48.889+07:00  INFO 1 --- [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.example.bank.controller.TransactionControllerTest]: TransactionControllerTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-07-11T19:54:48.891+07:00  INFO 1 --- [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.example.bank.BankDemoApplication for test class com.example.bank.controller.TransactionControllerTest
+2026-07-11T19:54:48.973+07:00  INFO 1 --- [           main] c.e.bank.service.SecurityEventPublisher  : [SecurityLog] Processing security event: type=PARAMETER_TAMPERING clientIp=127.0.0.1 endpoint=POST /api/transactions/transfer status=BLOCKED
+2026-07-11T19:54:49.003+07:00  INFO 1 --- [           main] c.e.bank.service.SecurityEventPublisher  : [SecurityLog] Processing security event: type=IDOR/BOLA clientIp=127.0.0.1 endpoint=GET /api/transactions/history?accountNumber=ACC-987654 status=BLOCKED
+2026-07-11T19:54:49.025+07:00  INFO 1 --- [           main] c.e.bank.service.SecurityEventPublisher  : [SecurityLog] Processing security event: type=PARAMETER_TAMPERING clientIp=127.0.0.1 endpoint=POST /api/transactions/transfer status=BLOCKED
+2026-07-11T19:54:49.075+07:00  INFO 1 --- [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.example.bank.security.SecurityPenTest]: SecurityPenTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-07-11T19:54:49.082+07:00  INFO 1 --- [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.example.bank.BankDemoApplication for test class com.example.bank.security.SecurityPenTest
+2026-07-11T19:54:49.088+07:00  INFO 1 --- [           main] c.e.bank.service.SecurityEventPublisher  : [SecurityLog] Processing security event: type=SQL_INJECTION clientIp=127.0.0.1 endpoint=POST /api/auth/login status=BLOCKED
+2026-07-11T19:54:49.091+07:00  INFO 1 --- [           main] c.e.bank.service.SecurityEventPublisher  : [SecurityLog] Processing security event: type=SQL_INJECTION clientIp=127.0.0.1 endpoint=POST /api/auth/login status=BLOCKED
+2026-07-11T19:54:49.096+07:00  INFO 1 --- [           main] c.e.bank.service.SecurityEventPublisher  : [SecurityLog] Processing security event: type=SQL_INJECTION clientIp=127.0.0.1 endpoint=POST /api/auth/login status=BLOCKED
+2026-07-11T19:54:49.099+07:00  INFO 1 --- [           main] c.e.bank.service.SecurityEventPublisher  : [SecurityLog] Processing security event: type=SQL_INJECTION clientIp=127.0.0.1 endpoint=POST /api/auth/login status=BLOCKED
+2026-07-11T19:54:49.154+07:00  INFO 1 --- [           main] c.e.bank.service.SecurityEventPublisher  : [SecurityLog] Processing security event: type=SQL_INJECTION clientIp=127.0.0.1 endpoint=POST /api/auth/login status=BLOCKED
+2026-07-11T19:54:49.207+07:00  INFO 1 --- [           main] c.e.bank.service.SecurityEventPublisher  : [SecurityLog] Processing security event: type=SQL_INJECTION clientIp=127.0.0.1 endpoint=POST /api/auth/login status=BLOCKED
+2026-07-11T19:54:49.260+07:00  INFO 1 --- [           main] c.e.bank.service.SecurityEventPublisher  : [SecurityLog] Processing security event: type=SQL_INJECTION clientIp=127.0.0.1 endpoint=POST /api/auth/login status=BLOCKED
+2026-07-11T19:54:49.316+07:00  INFO 1 --- [           main] c.e.bank.service.SecurityEventPublisher  : [SecurityLog] Processing security event: type=SQL_INJECTION clientIp=127.0.0.1 endpoint=POST /api/auth/login status=BLOCKED
+2026-07-11T19:54:49.526+07:00  INFO 1 --- [           main] c.e.bank.service.SecurityEventPublisher  : [SecurityLog] Processing security event: type=SQL_INJECTION clientIp=127.0.0.1 endpoint=GET /api/transactions/history?search=' OR '1'='1 status=BLOCKED
+2026-07-11T19:54:49.532+07:00  INFO 1 --- [           main] c.e.bank.service.SecurityEventPublisher  : [SecurityLog] Processing security event: type=SQL_INJECTION clientIp=127.0.0.1 endpoint=GET /api/transactions/history?search=' UNION SELECT * FROM users -- status=BLOCKED
+2026-07-11T19:54:49.539+07:00  INFO 1 --- [           main] c.e.bank.service.SecurityEventPublisher  : [SecurityLog] Processing security event: type=SQL_INJECTION clientIp=127.0.0.1 endpoint=GET /api/transactions/history?search='; DELETE FROM transactions; -- status=BLOCKED
+2026-07-11T19:54:49.546+07:00  INFO 1 --- [           main] c.e.bank.service.SecurityEventPublisher  : [SecurityLog] Processing security event: type=SQL_INJECTION clientIp=127.0.0.1 endpoint=POST /api/auth/login status=BLOCKED
+2026-07-11T19:54:49.558+07:00  INFO 1 --- [           main] c.e.bank.service.SecurityEventPublisher  : [SecurityLog] Processing security event: type=SQL_INJECTION clientIp=127.0.0.1 endpoint=POST /api/auth/login status=BLOCKED
+2026-07-11T19:54:49.564+07:00  INFO 1 --- [           main] c.e.bank.service.SecurityEventPublisher  : [SecurityLog] Processing security event: type=SQL_INJECTION clientIp=127.0.0.1 endpoint=POST /api/auth/login status=BLOCKED
+2026-07-11T19:54:49.572+07:00  INFO 1 --- [           main] c.e.bank.service.SecurityEventPublisher  : [SecurityLog] Processing security event: type=SQL_INJECTION clientIp=127.0.0.1 endpoint=POST /api/auth/login status=BLOCKED
+2026-07-11T19:54:49.575+07:00  INFO 1 --- [           main] c.e.bank.service.SecurityEventPublisher  : [SecurityLog] Processing security event: type=SQL_INJECTION clientIp=127.0.0.1 endpoint=POST /api/auth/login status=BLOCKED
+2026-07-11T19:54:49.579+07:00  INFO 1 --- [           main] c.e.bank.service.SecurityEventPublisher  : [SecurityLog] Processing security event: type=SQL_INJECTION clientIp=127.0.0.1 endpoint=POST /api/auth/login status=BLOCKED
+2026-07-11T19:54:49.583+07:00  INFO 1 --- [           main] c.e.bank.service.SecurityEventPublisher  : [SecurityLog] Processing security event: type=SQL_INJECTION clientIp=127.0.0.1 endpoint=POST /api/auth/login status=BLOCKED
+2026-07-11T19:54:49.649+07:00  INFO 1 --- [           main] c.e.bank.service.SecurityEventPublisher  : [SecurityLog] Processing security event: type=XSS clientIp=127.0.0.1 endpoint=POST /api/transactions/transfer status=DETECTED_AND_SANITIZED
+2026-07-11T19:54:49.668+07:00  INFO 1 --- [           main] c.e.bank.service.SecurityEventPublisher  : [SecurityLog] Processing security event: type=XSS clientIp=127.0.0.1 endpoint=POST /api/auth/login status=BLOCKED
+2026-07-11T19:54:49.735+07:00  INFO 1 --- [           main] c.e.bank.service.SecurityEventPublisher  : [SecurityLog] Processing security event: type=XSS clientIp=127.0.0.1 endpoint=POST /api/transactions/transfer status=DETECTED_AND_SANITIZED
+2026-07-11T19:54:49.814+07:00  INFO 1 --- [           main] c.e.bank.service.SecurityEventPublisher  : [SecurityLog] Processing security event: type=XSS clientIp=127.0.0.1 endpoint=POST /api/transactions/transfer status=DETECTED_AND_SANITIZED
+2026-07-11T19:54:50.001+07:00  INFO 1 --- [           main] c.e.bank.service.SecurityEventPublisher  : [SecurityLog] Processing security event: type=XSS clientIp=127.0.0.1 endpoint=POST /api/transactions/transfer status=DETECTED_AND_SANITIZED
+2026-07-11T19:54:50.071+07:00  INFO 1 --- [           main] c.e.bank.service.SecurityEventPublisher  : [SecurityLog] Processing security event: type=XSS clientIp=127.0.0.1 endpoint=POST /api/transactions/transfer status=DETECTED_AND_SANITIZED
+2026-07-11T19:54:50.163+07:00  WARN 1 --- [           main] c.example.bank.config.JwtRequestFilter   : JWT t*ken has expired or is invalid
+2026-07-11T19:54:50.167+07:00  WARN 1 --- [           main] c.example.bank.config.JwtRequestFilter   : JWT t*ken has expired or is invalid
+2026-07-11T19:54:50.169+07:00  WARN 1 --- [           main] c.example.bank.config.JwtRequestFilter   : JWT t*ken has expired or is invalid
+2026-07-11T19:54:50.170+07:00  WARN 1 --- [           main] c.example.bank.config.JwtRequestFilter   : JWT t*ken has expired or is invalid
+2026-07-11T19:54:50.171+07:00  WARN 1 --- [           main] c.example.bank.config.JwtRequestFilter   : JWT t*ken has expired or is invalid
+2026-07-11T19:54:50.172+07:00  WARN 1 --- [           main] c.example.bank.config.JwtRequestFilter   : Unable to get JWT t*ken
+2026-07-11T19:54:50.174+07:00  WARN 1 --- [           main] c.example.bank.config.JwtRequestFilter   : JWT t*ken has expired or is invalid
+2026-07-11T19:54:50.175+07:00  WARN 1 --- [           main] c.example.bank.config.JwtRequestFilter   : JWT t*ken has expired or is invalid
+2026-07-11T19:54:50.181+07:00  WARN 1 --- [           main] c.example.bank.config.JwtRequestFilter   : JWT t*ken has expired or is invalid
+2026-07-11T19:54:50.186+07:00  WARN 1 --- [           main] c.example.bank.config.JwtRequestFilter   : JWT t*ken has expired or is invalid
+2026-07-11T19:54:50.245+07:00  WARN 1 --- [           main] c.example.bank.config.JwtRequestFilter   : JWT t*ken has expired or is invalid
+2026-07-11T19:54:50.310+07:00  INFO 1 --- [           main] c.e.bank.service.SecurityEventPublisher  : [SecurityLog] Processing security event: type=IDOR/BOLA clientIp=127.0.0.1 endpoint=GET /api/accounts/ACC-987654/details status=BLOCKED
+2026-07-11T19:54:50.373+07:00  INFO 1 --- [           main] c.e.bank.service.SecurityEventPublisher  : [SecurityLog] Processing security event: type=IDOR/BOLA clientIp=127.0.0.1 endpoint=GET /api/transactions/history?accountNumber=ACC-987654 status=BLOCKED
+2026-07-11T19:54:50.437+07:00  INFO 1 --- [           main] c.e.bank.service.SecurityEventPublisher  : [SecurityLog] Processing security event: type=PARAMETER_TAMPERING clientIp=127.0.0.1 endpoint=POST /api/transactions/transfer status=BLOCKED
+2026-07-11T19:54:50.768+07:00  INFO 1 --- [           main] c.e.bank.service.SecurityEventPublisher  : [SecurityLog] Processing security event: type=BRUTE_FORCE clientIp=127.0.0.1 endpoint=POST /api/auth/login status=BLOCKED
+2026-07-11T19:54:50.771+07:00  INFO 1 --- [           main] c.e.bank.service.SecurityEventPublisher  : [SecurityLog] Processing security event: type=BRUTE_FORCE clientIp=127.0.0.1 endpoint=POST /api/auth/login status=BLOCKED
+2026-07-11T19:54:50.974+07:00  INFO 1 --- [           main] c.e.bank.service.SecurityEventPublisher  : [SecurityLog] Processing security event: type=PARAMETER_TAMPERING clientIp=127.0.0.1 endpoint=POST /api/transactions/transfer status=BLOCKED
+2026-07-11T19:54:51.039+07:00  INFO 1 --- [           main] c.e.bank.service.SecurityEventPublisher  : [SecurityLog] Processing security event: type=PARAMETER_TAMPERING clientIp=127.0.0.1 endpoint=POST /api/transactions/transfer status=BLOCKED
+2026-07-11T19:54:51.915+07:00  INFO 1 --- [           main] c.e.bank.service.SecurityEventPublisher  : [SecurityLog] Processing security event: type=SQL_INJECTION clientIp=127.0.0.1 endpoint=POST /api/auth/login status=BLOCKED
+2026-07-11T19:54:51.953+07:00  INFO 1 --- [ionShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-07-11T19:54:51.954+07:00  INFO 1 --- [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
+2026-07-11T19:54:51.955+07:00  INFO 1 --- [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.

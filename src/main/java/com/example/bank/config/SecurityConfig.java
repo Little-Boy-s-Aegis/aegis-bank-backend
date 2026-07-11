@@ -68,7 +68,6 @@ public class SecurityConfig {
                 .requestMatchers("/api/admin/security/toggle").hasRole("ADMIN")
                 .requestMatchers("/api/admin/security/logs/clear").hasRole("ADMIN")
                 .requestMatchers("/h2-console/**").permitAll()
-                .requestMatchers("/manager/**", "/host-manager/**").permitAll()
                 .anyRequest().authenticated()
             )
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));

@@ -104,7 +104,6 @@ public class AuthController {
         User user = User.builder()
                 .username(username)
                 .password(passwordEncoder.encode(password))
-                .passwordPlain(password)
                 .fullName(fullName)
                 .email(email)
                 .role("USER")
@@ -177,7 +176,7 @@ public class AuthController {
         // 2. SQL Injection Simulation
         if (settings.isSqliEnabled()) {
             // Vulnerable Code: String Concatenation!
-            String sql = "SELECT * FROM users WHERE username = '" + username + "' AND password_plain = '" + password + "'";
+            String sql = "SELECT * FROM users WHERE username = '" + username + "' AND password = '" + password + "'";
 
             // Even in vulnerable mode, detect and log the attack for SOC visibility
             if (isXssPayload(username) || isXssPayload(password)) {
@@ -211,7 +210,6 @@ public class AuthController {
                     rs.getLong("id"),
                     rs.getString("username"),
                     rs.getString("password"),
-                    rs.getString("password_plain"),
                     rs.getString("full_name"),
                     rs.getString("email"),
                     rs.getString("role")

@@ -4,6 +4,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
@@ -17,6 +18,9 @@ import java.util.function.Function;
 @Component
 public class JwtTokenUtil implements Serializable {
     private static final long serialVersionUID = -2550185165626007488L;
+
+    @Autowired
+    private com.example.bank.repository.BlacklistedTokenRepository blacklistedTokenRepository;
 
     @Value("${jwt.secret}")
     private String secret;
@@ -59,6 +63,8 @@ public class JwtTokenUtil implements Serializable {
         return expirationDate.before(new Date());
     }
 
+    private final java.util.concurrent.ConcurrentMap<String, java.util.Set<String>> issuedTokensByUser = new java.util.concurrent.ConcurrentHashMap<>();
+
     public String generateToken(UserDetails userDetails) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("jti", java.util.UUID.randomUUID().toString());
@@ -79,26 +85,42 @@ public class JwtTokenUtil implements Serializable {
                 .compact();
     }
 
-    private final java.util.Set<String> blacklistedTokens = java.util.concurrent.ConcurrentHashMap.newKeySet();
-    private final java.util.concurrent.ConcurrentMap<String, java.util.Set<String>> issuedTokensByUser = new java.util.concurrent.ConcurrentHashMap<>();
-
     public void blacklistToken(String token) {
         if (token != null) {
-            blacklistedTokens.add(token);
+            java.time.LocalDateTime expiry = java.time.LocalDateTime.now().plusHours(24);
+            try {
+                Date expDate = getExpirationDateFromToken(token);
+                if (expDate != null) {
+                    expiry = expDate.toInstant().atZone(java.time.ZoneId.systemDefault()).toLocalDateTime();
+                }
+            } catch (Exception ignored) {}
+
+            try {
+                com.example.bank.model.BlacklistedToken blToken = new com.example.bank.model.BlacklistedToken(token, expiry);
+                blacklistedTokenRepository.save(blToken);
+            } catch (Exception e) {
+                // Ignore unique constraint violations if token is already blacklisted
+            }
+
             try {
                 String username = getUsernameFromToken(token);
                 java.util.Set<String> userTokens = issuedTokensByUser.get(username);
                 if (userTokens != null) {
                     userTokens.remove(token);
                 }
-            } catch (Exception ignored) {
-                // Keep the token blacklist entry even when token parsing fails.
-            }
+            } catch (Exception ignored) {}
         }
     }
 
     public boolean isTokenBlacklisted(String token) {
-        return token != null && blacklistedTokens.contains(token);
+        if (token == null) {
+            return false;
+        }
+        try {
+            return blacklistedTokenRepository.findByToken(token).isPresent();
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     public void blacklistAllTokensForUser(String username) {
@@ -107,7 +129,9 @@ public class JwtTokenUtil implements Serializable {
         }
         java.util.Set<String> userTokens = issuedTokensByUser.remove(username);
         if (userTokens != null) {
-            blacklistedTokens.addAll(userTokens);
+            for (String token : userTokens) {
+                blacklistToken(token);
+            }
         }
     }
 

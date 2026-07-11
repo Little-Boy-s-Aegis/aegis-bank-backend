@@ -15,7 +15,20 @@ public class SecuritySettings {
         return instance;
     }
 
+    public boolean isProduction() {
+        String url = System.getenv("SPRING_DATASOURCE_URL");
+        if (url != null && url.contains(".rds.amazonaws.com")) {
+            return true;
+        }
+        String env = System.getenv("AEGIS_ENVIRONMENT");
+        if (env != null && (env.equalsIgnoreCase("production") || env.equalsIgnoreCase("prod"))) {
+            return true;
+        }
+        return false;
+    }
+
     public boolean isSqliEnabled() {
+        if (isProduction()) return false;
         return sqliEnabled;
     }
 
@@ -24,6 +37,7 @@ public class SecuritySettings {
     }
 
     public boolean isXssEnabled() {
+        if (isProduction()) return false;
         return xssEnabled;
     }
 
@@ -32,6 +46,7 @@ public class SecuritySettings {
     }
 
     public boolean isIdorEnabled() {
+        if (isProduction()) return false;
         return idorEnabled;
     }
 
@@ -40,6 +55,7 @@ public class SecuritySettings {
     }
 
     public boolean isParamTamperingEnabled() {
+        if (isProduction()) return false;
         return paramTamperingEnabled;
     }
 
@@ -48,6 +64,7 @@ public class SecuritySettings {
     }
 
     public boolean isBruteForceEnabled() {
+        if (isProduction()) return false;
         return bruteForceEnabled;
     }
 
