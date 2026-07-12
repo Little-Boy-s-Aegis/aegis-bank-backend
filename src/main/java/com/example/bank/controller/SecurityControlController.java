@@ -26,14 +26,7 @@ public class SecurityControlController {
     private JdbcTemplate jdbcTemplate;
 
     @GetMapping("/status")
-    public ResponseEntity<?> getSecurityStatus(
-            @RequestHeader(value = "X-Aegis-Token", required = false) String token
-    ) {
-        org.springframework.security.core.Authentication auth = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
-        ResponseEntity<?> authCheck = syncOrAdminRequired(token, auth);
-        if (authCheck != null) {
-            return authCheck;
-        }
+    public ResponseEntity<?> getSecurityStatus() {
         return ResponseEntity.ok(SecuritySettings.getInstance());
     }
 
