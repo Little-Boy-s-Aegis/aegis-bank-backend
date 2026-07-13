@@ -1,134 +1,214 @@
-# Aegis Bank Core REST API Backend
+# Aegis Bank Backend
 
-This is the core banking REST API backend for the Aegis Secure Banking Platform. Built using **Spring Boot 3.4**, Hibernate/JPA, and PostgreSQL/H2, this service simulates security vulnerabilities (offense) and implements corresponding security controls (defense) in real-time.
+Spring Boot REST API for the Little Boy's Aegis banking and cyber-defense
+demonstration. It provides customer authentication, accounts, transfers,
+security-control APIs, audit/security logs, JWT enforcement, IP blocking, and
+Kafka security-event publication.
 
----
+> This is a controlled hackathon target. It includes configurable
+> attack-and-defense behavior and seeded demo credentials. Do not expose it as a
+> real banking service or reuse its defaults in production.
+
+## Capabilities
+
+- User registration, login, logout, and JWT revocation
+- Account detail lookup
+- Transaction execution and history search
+- Concurrency and idempotency protections around transfers
+- Validation against invalid, non-finite, negative, and unsafe amounts
+- Runtime security-control toggles for demo scenarios
+- Security log and banned-IP management
+- Kafka publication of security telemetry
+- Request-path normalization, IP block, JWT, and Spring Security filters
+- PostgreSQL runtime persistence and H2-backed tests
+
+## Architecture
+
+```text
+web/mobile client
+      |
+      v
+Spring Security filter chain
+  |-- API path normalization
+  |-- IP block enforcement
+  `-- JWT authentication
+      |
+      v
+REST controllers --> services/repositories --> PostgreSQL
+      |
+      `--> security event publisher --> Kafka --> SOC pipeline
+```
+
+## Technology
+
+| Component | Version / implementation |
+|---|---|
+| Java | 17 |
+| Spring Boot | 3.4.11 |
+| Spring Security | 6.5.9 |
+| Persistence | Spring Data JPA, PostgreSQL runtime, H2 tests |
+| Messaging | Spring Kafka / Kafka clients 3.9.2 |
+| JWT | JJWT 0.11.5 |
+| Build | Maven |
 
 ## Prerequisites
-Ensure you have the following installed locally:
-- **Java Development Kit (JDK) 17+** (Recommended: Eclipse Temurin or OpenJDK)
-- **Apache Maven 3.8+**
-- **Docker Desktop** (Required only for containerized deployment or starting local PostgreSQL & Kafka)
 
----
+- JDK 17+
+- Maven 3.8+
+- PostgreSQL 16 or a compatible PostgreSQL server
+- Optional Kafka broker; the publisher is configured for short, non-blocking
+  failure behavior when Kafka is unavailable
+- Docker for container builds or the complete local stack
 
-## Configuration Properties
+## Configuration
 
-Configuration settings are located in:
-- Main: [src/main/resources/application.properties](file:///d:/hackathon/BE/src/main/resources/application.properties)
-- Testing: [src/test/resources/application.properties](file:///d:/hackathon/BE/src/test/resources/application.properties)
+The runtime defaults to port `8080` and PostgreSQL database `aegis` on
+`localhost:5432`. The main settings can be overridden with Spring environment
+variables:
 
-### Key Environment Variables (Overrides)
-You can set these in your terminal or `.env` file when running via Docker:
-- `SPRING_DATASOURCE_URL`: PostgreSQL connection string (Defaults to local database).
-- `SPRING_DATASOURCE_USERNAME` / `SPRING_DATASOURCE_PASSWORD`: Database credentials.
-- `KAFKA_BOOTSTRAP_SERVERS`: Kafka broker addresses (Defaults to `localhost:9094`).
-- `JWT_SECRET`: Secret key for signature authorization.
-- `AEGIS_SECURITY_SYNC_TOKEN`: Sync key for authentication between microservices.
+| Variable | Required | Purpose |
+|---|---:|---|
+| `SPRING_DATASOURCE_URL` | no | JDBC URL; default `jdbc:postgresql://localhost:5432/aegis` |
+| `SPRING_DATASOURCE_USERNAME` | no | Database user; default `postgres` |
+| `SPRING_DATASOURCE_PASSWORD` | yes | Database password |
+| `JWT_SECRET` | yes | High-entropy JWT signing secret |
+| `AEGIS_SECURITY_SYNC_TOKEN` | yes | Internal service authentication token |
+| `KAFKA_BOOTSTRAP_SERVERS` | no | Broker list; default `localhost:9094` |
+| `SERVER_PORT` | no | HTTP port; default `8080` |
 
----
+Generate independent local secrets, for example:
 
-## Running the Application (Direct / Host Mode)
-
-### 1. Start Infrastructure (PostgreSQL & Kafka)
-Before running the backend on your host machine, start the required database and event stream containers:
 ```bash
-# From the root workspace, navigate to the deployment directory and start infra
-cd ../aegis-bank-deployment
-docker compose up postgres kafka kafka-ui -d
+export SPRING_DATASOURCE_PASSWORD='<database-password>'
+export JWT_SECRET="$(openssl rand -hex 32)"
+export AEGIS_SECURITY_SYNC_TOKEN="$(openssl rand -hex 32)"
 ```
 
-### 2. Run the Spring Boot App
-Navigate to the `BE` folder and execute:
+Do not place real values in `application.properties` or commit them in shell
+files.
+
+## Run Locally
+
+Create the database and start the application:
+
 ```bash
-cd ../BE
+createdb -h localhost -U postgres aegis
 mvn spring-boot:run
 ```
-- The backend API will start on **`http://localhost:8080`**.
-- An in-memory H2 Console is fallback-ready at **`http://localhost:8080/h2-console`**
-  - **JDBC URL**: `jdbc:h2:mem:bankdb`
-  - **User**: `sa` / **Password**: `password`
 
-### 3. Run Automated Tests & Security Audits
-Execute unit and integration tests:
+Health check:
+
 ```bash
-mvn clean test
+curl http://localhost:8080/health
 ```
 
-### 4. Build Production Package (JAR)
-Compile and package the application into a standalone runnable JAR file:
+The application seeds demo users only when the user table is empty:
+
+| Role | Username | Password | Account |
+|---|---|---|---|
+| Administrator | `admin` | `admin123` | none |
+| Customer | `alice` | `password123` | `ACC-123456` |
+| Customer | `bob` | `password123` | `ACC-987654` |
+
+Change or disable these seed values before any shared deployment.
+
+## API Summary
+
+| Method | Path | Purpose |
+|---|---|---|
+| `GET` | `/health` | Service health |
+| `POST` | `/api/auth/register` | Register a demo customer |
+| `POST` | `/api/auth/login` | Authenticate and receive JWT/user details |
+| `POST` | `/api/auth/logout` | Revoke the presented token |
+| `GET` | `/api/accounts/{accountNumber}/details` | Load account details |
+| `POST` | `/api/transactions/transfer` | Transfer funds |
+| `GET` | `/api/transactions/history` | Query account history |
+| `GET` | `/api/admin/security/status` | Read demo security controls |
+| `POST` | `/api/admin/security/toggle` | Change an allowed control |
+| `GET` | `/api/admin/security/logs` | Read security events |
+| `POST` | `/api/admin/security/logs/clear` | Clear demo security logs |
+| `GET` | `/api/admin/security/banned-ips` | List blocked IPs |
+| `POST` | `/api/admin/security/banned-ips` | Add a block |
+| `POST` | `/api/admin/security/banned-ips/clear` | Clear blocks |
+
+Protected endpoints require `Authorization: Bearer <jwt>`. Administrative
+operations also require the appropriate role or internal synchronization token
+as enforced by the controller and filter chain.
+
+### Login example
+
 ```bash
-mvn clean package -DskipTests
+curl -sS http://localhost:8080/api/auth/login \
+  -H 'Content-Type: application/json' \
+  -d '{"username":"alice","password":"password123"}'
 ```
-The compiled artifact will be generated at `target/bank-demo-0.0.1-SNAPSHOT.jar`. To run it directly:
+
+## Tests and Build
+
+Tests use an in-memory H2 database in PostgreSQL compatibility mode and disable
+Kafka auto-configuration, so PostgreSQL and Kafka are not required:
+
+```bash
+mvn test
+mvn clean verify
+mvn clean package
+```
+
+The packaged application is written to
+`target/bank-demo-0.0.1-SNAPSHOT.jar`:
+
 ```bash
 java -jar target/bank-demo-0.0.1-SNAPSHOT.jar
 ```
 
----
+Additional scripts under `scripts/` exercise end-to-end and SQL-injection demo
+flows on Windows/PowerShell hosts.
 
-## Containerized Deployment (Docker)
+## Docker
 
-To build and run this component standalone in Docker:
-
-### 1. Build the Docker Image
 ```bash
 docker build -t aegis-bank-backend .
-```
-
-### 2. Run the Container
-Ensure it can reach your database and Kafka services (preferably run it within the same docker network):
-```bash
-docker run -d -p 8080:8080 \
+docker run --rm -p 8080:8080 \
   -e SPRING_DATASOURCE_URL=jdbc:postgresql://host.docker.internal:5432/aegis \
+  -e SPRING_DATASOURCE_USERNAME=postgres \
+  -e SPRING_DATASOURCE_PASSWORD='<database-password>' \
+  -e JWT_SECRET='<jwt-secret>' \
+  -e AEGIS_SECURITY_SYNC_TOKEN='<internal-token>' \
   -e KAFKA_BOOTSTRAP_SERVERS=host.docker.internal:9094 \
-  --name aegis-backend-service \
   aegis-bank-backend
 ```
 
----
+The full deployment repository supplies the internal network, PostgreSQL,
+Kafka, gateway, and synchronized secrets.
 
-## Security Hardening and Defensive Controls
+## Repository Layout
 
-The backend includes several defensive controls to mitigate common vulnerabilities and infrastructure bugs:
+```text
+src/main/java/com/example/bank/
+├── config/          # Security filters, JWT, path rules, and demo seeding
+├── controller/      # REST endpoints and exception mapping
+├── model/           # JPA entities and request models
+├── repository/      # Spring Data repositories
+└── service/         # Security event publication
+src/main/resources/  # Runtime and logging configuration
+src/test/             # Controller and security tests
+scripts/              # Manual/e2e security demo scripts
+```
 
-* **JWT Collision Mitigation**: Enforces unique UUID-based `jti` (JWT ID) claims in JWT tokens. This eliminates collision-induced 401 Unauthorized exceptions during high-frequency integration test executions in CI pipelines.
-* **Transfer Parameter Validation**: Restricts transfer transactions to block NaN (Not a Number) and Infinite Double values, ensuring mathematical safety against balance tampering.
-* **Concurrency Protection**: Implements backend synchronization locks on sensitive routes to prevent race conditions (such as double-spending attempts during funds transfer).
-* **Rate Limiting**: Defends API endpoints against brute force attempts and denial-of-service vectors.
+## Security Boundaries
 
----
-
-## Tech Stack
-
-| Component | Version |
-|---|---|
-| Java | 17 (Eclipse Temurin) |
-| Spring Boot | 3.4.11 |
-| Spring Security | 6.5.9 |
-| Hibernate/JPA | PostgreSQL 16 + H2 fallback |
-| Apache Kafka | 3.9.2 (kafka-clients) |
-| JWT | jjwt 0.11.5 |
-| Build | Maven, multi-stage Docker |
-
----
-
-## Deployment Info
-
-In the full ecosystem, this service runs as `be-backend` container. Nginx routes `/api-bank/*` requests to this backend on port 8080. See [aegis-bank-deployment](https://github.com/Little-Boy-s-Aegis/aegis-bank-deployment) for the full Docker Compose setup.
-
----
+- Never use the seeded users, default database name, or demo control settings
+  for production.
+- Use TLS at the gateway and rotate JWT/internal tokens independently.
+- Keep PostgreSQL and Kafka on private networks.
+- Treat logs as sensitive: they may contain masked attack payload context and
+  customer identifiers.
+- Security toggles exist for demonstration; scope and gate administrator access
+  when running a shared environment.
 
 ## Related Repositories
 
-| Repository | Description |
-|---|---|
-| [aegis-bank-deployment](https://github.com/Little-Boy-s-Aegis/aegis-bank-deployment) | Docker Compose orchestration, Nginx, Kafka, OPA, Vault |
-| [aegis-bank-web-client](https://github.com/Little-Boy-s-Aegis/aegis-bank-web-client) | Next.js banking portal |
-| [aegis-bank-mobile-app](https://github.com/Little-Boy-s-Aegis/aegis-bank-mobile-app) | Flutter mobile banking app |
-| [dashboard](https://github.com/Little-Boy-s-Aegis/dashboard) | SOC Dashboard (Go + React) |
-| [agent-layer-1](https://github.com/Little-Boy-s-Aegis/agent-layer-1) | AI Sensor Agents |
-| [agent-layer-2](https://github.com/Little-Boy-s-Aegis/agent-layer-2) | Meta Analyzer and SOAR orchestrator prompts |
-| [aegis-soar-engine](https://github.com/Little-Boy-s-Aegis/aegis-soar-engine) | SOAR Decision Engine |
-| [aegis-staging-sandbox](https://github.com/Little-Boy-s-Aegis/aegis-staging-sandbox) | Staging simulation APIs |
-| [aegis-bank-terraform](https://github.com/Little-Boy-s-Aegis/aegis-bank-terraform) | AWS Terraform infrastructure |
+- [`aegis-bank-web-client`](https://github.com/Little-Boy-s-Aegis/aegis-bank-web-client) — web client
+- [`aegis-bank-mobile-app`](https://github.com/Little-Boy-s-Aegis/aegis-bank-mobile-app) — Flutter client
+- [`aegis-bank-deployment`](https://github.com/Little-Boy-s-Aegis/aegis-bank-deployment) — full stack
+- [`dashboard`](https://github.com/Little-Boy-s-Aegis/dashboard) — SOC consumer and UI
