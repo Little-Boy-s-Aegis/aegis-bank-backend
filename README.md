@@ -1,5 +1,10 @@
 # Aegis Bank Backend
 
+[![Git Clones](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/Little-Boy-s-Aegis/aegis-bank-deployment/main/clone-badge.json)](https://github.com/Little-Boy-s-Aegis/aegis-bank-deployment)
+[![Unique Cloners](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/Little-Boy-s-Aegis/aegis-bank-deployment/main/uniques-badge.json)](https://github.com/Little-Boy-s-Aegis/aegis-bank-deployment)
+[![Release Downloads](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/Little-Boy-s-Aegis/aegis-bank-deployment/main/downloads-badge.json)](https://github.com/Little-Boy-s-Aegis/aegis-bank-deployment/releases)
+[![Stars](https://img.shields.io/github/stars/Little-Boy-s-Aegis/aegis-bank-backend?style=flat&color=F59E0B&logo=github&label=stars)](https://github.com/Little-Boy-s-Aegis/aegis-bank-backend/stargazers)
+
 Spring Boot REST API for the Little Boy's Aegis banking and cyber-defense
 demonstration. It provides customer authentication, accounts, transfers,
 security-control APIs, audit/security logs, JWT enforcement, IP blocking, and
