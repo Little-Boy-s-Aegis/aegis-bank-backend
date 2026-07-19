@@ -19,22 +19,14 @@ public class AuthControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @Autowired
-    private com.example.bank.repository.UserRepository userRepository;
-
-    @Autowired
-    private org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
-
-    @Test
-    public void testDebugDatabaseState() throws Exception {
-        System.out.println("=== DEBUG DATABASE STATE ===");
-        long userCount = userRepository.count();
-        System.out.println("Total users in DB: " + userCount);
-        userRepository.findAll().forEach(u -> {
-            boolean pwMatches = passwordEncoder.matches("password123", u.getPassword());
-            System.out.println("User: username=" + u.getUsername() + ", email=" + u.getEmail() + ", role=" + u.getRole() + ", pwMatches=" + pwMatches);
-        });
-        System.out.println("============================");
+    @org.junit.jupiter.api.BeforeEach
+    public void setupSecuritySettings() {
+        com.example.bank.model.SecuritySettings settings = com.example.bank.model.SecuritySettings.getInstance();
+        settings.setSqliEnabled(false);
+        settings.setXssEnabled(false);
+        settings.setIdorEnabled(false);
+        settings.setParamTamperingEnabled(false);
+        settings.setBruteForceEnabled(false);
     }
 
     @Test
