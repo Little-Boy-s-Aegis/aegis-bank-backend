@@ -29,7 +29,7 @@ public class DatabaseSeeder implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        if (userRepository.count() == 0) {
+        if (userRepository.findByUsername("alice").isEmpty()) {
             // Create Admin
             User admin = User.builder()
                     .username("admin")
