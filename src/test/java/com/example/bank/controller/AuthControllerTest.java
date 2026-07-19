@@ -7,6 +7,14 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
+import org.junit.jupiter.api.BeforeEach;
+import com.example.bank.model.User;
+import com.example.bank.model.Account;
+import com.example.bank.repository.UserRepository;
+import com.example.bank.repository.AccountRepository;
+import com.example.bank.repository.TransactionRepository;
+import org.springframework.security.crypto.password.PasswordEncoder;
+
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -18,6 +26,69 @@ public class AuthControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private AccountRepository accountRepository;
+
+    @Autowired
+    private TransactionRepository transactionRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    @BeforeEach
+    public void setUp() {
+        if (userRepository.findByUsername("alice").isEmpty()) {
+            // Seed Admin
+            User admin = User.builder()
+                    .username("admin")
+                    .password(passwordEncoder.encode("admin123"))
+                    .fullName("System Administrator")
+                    .email("admin@demo-bank.com")
+                    .role("ADMIN")
+                    .build();
+            userRepository.save(admin);
+
+            // Seed Alice
+            User alice = User.builder()
+                    .username("alice")
+                    .password(passwordEncoder.encode("password123"))
+                    .fullName("Alice Smith")
+                    .email("alice@demo-bank.com")
+                    .role("USER")
+                    .build();
+            userRepository.save(alice);
+
+            Account aliceAccount = Account.builder()
+                    .accountNumber("ACC-123456")
+                    .balance(15000000.00)
+                    .currency("VND")
+                    .user(alice)
+                    .build();
+            accountRepository.save(aliceAccount);
+
+            // Seed Bob
+            User bob = User.builder()
+                    .username("bob")
+                    .password(passwordEncoder.encode("password123"))
+                    .fullName("Bob Jones")
+                    .email("bob@demo-bank.com")
+                    .role("USER")
+                    .build();
+            userRepository.save(bob);
+
+            Account bobAccount = Account.builder()
+                    .accountNumber("ACC-987654")
+                    .balance(25000000.00)
+                    .currency("VND")
+                    .user(bob)
+                    .build();
+            accountRepository.save(bobAccount);
+        }
+    }
 
     @Test
     public void testLogoutAndTokenRevocation() throws Exception {
