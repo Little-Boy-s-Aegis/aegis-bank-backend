@@ -223,15 +223,9 @@ public class AuthController {
             }
         } else {
             // Secure Code: Prepared Statement & BCrypt Matcher
-            System.out.println("DEBUG LOGIN: secure mode. Username requested: '" + username + "'");
             Optional<User> userOpt = userRepository.findByUsername(username);
-            System.out.println("DEBUG LOGIN: userOpt.isPresent() = " + userOpt.isPresent());
-            if (userOpt.isPresent()) {
-                boolean pwMatch = passwordEncoder.matches(password, userOpt.get().getPassword());
-                System.out.println("DEBUG LOGIN: password match result = " + pwMatch + " (Input: '" + password + "', Stored: '" + userOpt.get().getPassword() + "')");
-                if (pwMatch) {
-                    authenticatedUser = userOpt.get();
-                }
+            if (userOpt.isPresent() && passwordEncoder.matches(password, userOpt.get().getPassword())) {
+                authenticatedUser = userOpt.get();
             }
 
             // Track failures for rate limit
