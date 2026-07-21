@@ -101,9 +101,10 @@ public class IpBlockFilter extends OncePerRequestFilter {
             }
         }
         SecurityContextHolder.clearContext();
+        // Only expire bank-specific cookies. Do NOT touch 'session_token'
+        // which belongs to the SOC dashboard — /soc/ is exempt from IP bans.
         expireCookie(response, "token");
         expireCookie(response, "user");
-        expireCookie(response, "session_token");
     }
 
     private void expireCookie(HttpServletResponse response, String name) {
@@ -116,7 +117,9 @@ public class IpBlockFilter extends OncePerRequestFilter {
         response.setHeader("Cache-Control", "no-store, no-cache, max-age=0, must-revalidate");
         response.setHeader("Pragma", "no-cache");
         response.setHeader("X-Aegis-IP-Banned", "true");
-        response.setHeader("Clear-Site-Data", "\"cache\", \"cookies\", \"storage\"");
+        // Do NOT use Clear-Site-Data: "cookies" — it wipes ALL cookies on the
+        // origin, including the SOC dashboard session_token which must survive.
+        response.setHeader("Clear-Site-Data", "\"cache\", \"storage\"");
         response.getWriter().write("""
             <!doctype html>
             <html lang="en">
